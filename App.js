@@ -1,20 +1,35 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import LoginScreen from './Screens/LoginScreen';
+import OwnerRegistration from './Screens/OwnerRegistration';
+import VehicleDetails from './Screens/VehicleDetails';
+import DriverDocuments from './Screens/DriverDocuments';
+import DriverVerification from './Screens/DriverVerification';
+import DriverDetails from './Screens/DriverDetails';
+import DrawerNavigator from './Navigation/DrawerNavigator';
+import TodayCard from './components/TodayCard';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+
+        {/* AUTH FLOW */}
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="OwnerRegistration" component={OwnerRegistration} />
+        <Stack.Screen name="VehicleDetails" component={VehicleDetails} />
+        <Stack.Screen name="DriverDocuments" component={DriverDocuments} />
+        <Stack.Screen name="DriverDetails" component={DriverDetails} />
+        <Stack.Screen name="DriverVerification" component={DriverVerification} />
+        <Stack.Screen name="TodayCard" component={TodayCard} />
+
+        {/* APP FLOW */}
+        <Stack.Screen name="DriverDashboard" component={DrawerNavigator} />
+
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
