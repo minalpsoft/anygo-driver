@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import { uploadDriverDocumentsApi } from '../api/authService';
+import { Linking, Alert } from 'react-native';
 
 export default function DriverDocuments() {
   const navigation = useNavigation();
@@ -17,6 +18,26 @@ export default function DriverDocuments() {
   const [licenseFront, setLicenseFront] = useState(null);
   const [licenseBack, setLicenseBack] = useState(null);
 
+  // const handleDigiLocker = async () => {
+  //   try {
+  //     const res = await fetch(
+  //       'https://api.yourdomain.com/auth/digilocker/url'
+  //     );
+  //     const data = await res.json();
+
+  //     if (!data?.url) {
+  //       Alert.alert('Error', 'DigiLocker not available');
+  //       return;
+  //     }
+
+  //     Linking.openURL(data.url);
+  //   } catch (err) {
+  //     Alert.alert('Error', 'Unable to open DigiLocker');
+  //   }
+  // };
+
+
+
   const handleUpload = async () => {
     if (!aadhaar || !panCard || !licenseFront || !licenseBack) {
       Alert.alert('Error', 'All documents required');
@@ -25,34 +46,33 @@ export default function DriverDocuments() {
 
     const formData = new FormData();
 
-    const appendFile = (key, file) => {
-      formData.append(key, {
-        uri: file.uri,
-        name: `${key}.jpg`,
-        type: 'image/jpeg',
-      });
-    };
+    formData.append('aadhaar', {
+      uri: aadhaar.uri,
+      name: 'aadhaar.jpg',
+      type: 'image/jpeg',
+    });
 
-    appendFile('aadhaar', aadhaar);
-    appendFile('panCard', panCard);
-    appendFile('licenseFront', licenseFront);
-    appendFile('licenseBack', licenseBack);
+    formData.append('panCard', {
+      uri: panCard.uri,
+      name: 'pan.jpg',
+      type: 'image/jpeg',
+    });
 
-    try {
-      const res = await uploadDriverDocumentsApi(formData);
-      console.log('DOCUMENT UPLOAD RESPONSE:', res);
+    formData.append('licenseFront', {
+      uri: licenseFront.uri,
+      name: 'license_front.jpg',
+      type: 'image/jpeg',
+    });
 
-      if (res?.message) {
-        Alert.alert('Success', res.message);
-        navigation.navigate('DriverVerification');
-      } else {
-        Alert.alert('Error', 'Upload failed');
-      }
-    } catch (err) {
-      console.log(err);
-      Alert.alert('Error', 'Server error');
-    }
+    formData.append('licenseBack', {
+      uri: licenseBack.uri,
+      name: 'license_back.jpg',
+      type: 'image/jpeg',
+    });
+
+    const res = await uploadDriverDocumentsApi(formData);
   };
+
 
   return (
     <LinearGradient
@@ -69,6 +89,13 @@ export default function DriverDocuments() {
       <AppLogo />
 
       <Text style={styles.title}>Driver Documents</Text>
+
+      // <TouchableOpacity style={styles.digiBtn} onPress={handleDigiLocker}>
+      //   <Ionicons name="shield-checkmark-outline" size={22} color="#1a73e8" />
+      //   <Text style={styles.digiText}>Upload via DigiLocker</Text>
+      // </TouchableOpacity>
+
+
 
       <AppFileInput label="Upload Aadhaar Card" onSelect={setAadhaar} />
       <AppFileInput label="Upload Pan Card" onSelect={setPanCard} />
@@ -100,6 +127,24 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     textAlign: 'center',
     marginBottom: 25,
-  }
+  },
+  //   digiBtn: {
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   justifyContent: 'center',
+  //   borderWidth: 1,
+  //   borderColor: '#1a73e8',
+  //   paddingVertical: 12,
+  //   borderRadius: 8,
+  //   marginBottom: 20,
+  //   backgroundColor: '#e8f0fe',
+  // },
+  // digiText: {
+  //   marginLeft: 8,
+  //   fontSize: 16,
+  //   fontWeight: '600',
+  //   color: '#1a73e8',
+  // },
+
 
 });

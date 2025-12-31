@@ -13,7 +13,6 @@ export const loginApi = async (mobile, password) => {
   return response.json();
 };
 
-
 export const ownerRegisterApi = async (payload) => {
   const response = await fetch(
     `${API_BASE_URL}owner/register`, 
@@ -62,47 +61,8 @@ export const addVehicleApi = async (payload) => {
 };
 
 
-export const uploadDriverDocumentsApi = async ({
-  aadhaar,
-  panCard,
-  licenseFront,
-  licenseBack,
-}) => {
+export const uploadDriverDocumentsApi = async (formData) => {
   const token = await AsyncStorage.getItem('driverToken');
-
-  const formData = new FormData();
-
-  if (aadhaar) {
-    formData.append('aadhaar', {
-      uri: aadhaar.uri,
-      name: 'aadhaar.jpg',
-      type: 'image/jpeg',
-    });
-  }
-
-  if (panCard) {
-    formData.append('panCard', {
-      uri: panCard.uri,
-      name: 'pan.jpg',
-      type: 'image/jpeg',
-    });
-  }
-
-  if (licenseFront) {
-    formData.append('licenseFront', {
-      uri: licenseFront.uri,
-      name: 'license_front.jpg',
-      type: 'image/jpeg',
-    });
-  }
-
-  if (licenseBack) {
-    formData.append('licenseBack', {
-      uri: licenseBack.uri,
-      name: 'license_back.jpg',
-      type: 'image/jpeg',
-    });
-  }
 
   const response = await fetch(
     `${API_BASE_URL}driver/register/documents`,
@@ -110,6 +70,7 @@ export const uploadDriverDocumentsApi = async ({
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
+        // ❌ DO NOT set Content-Type manually
       },
       body: formData,
     }

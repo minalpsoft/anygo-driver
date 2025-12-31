@@ -1,8 +1,10 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 
 export default function AppFileInput({ label, onSelect }) {
+  const [selected, setSelected] = useState(false);
 
   const pickFile = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -11,7 +13,16 @@ export default function AppFileInput({ label, onSelect }) {
     });
 
     if (!result.canceled) {
-      onSelect(result.assets[0]);
+      const asset = result.assets[0];
+
+      const fileObj = {
+        uri: asset.uri,
+        name: asset.fileName || 'document.jpg',
+        type: asset.mimeType || 'image/jpeg',
+      };
+
+      onSelect(fileObj);
+      setSelected(true);
     }
   };
 
@@ -21,7 +32,9 @@ export default function AppFileInput({ label, onSelect }) {
 
       <TouchableOpacity style={styles.btn} onPress={pickFile}>
         <Ionicons name="cloud-upload-outline" size={20} />
-        <Text style={styles.btnText}>Choose File</Text>
+        <Text style={styles.btnText}>
+          {selected ? 'File Selected ✔' : 'Choose File'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -37,5 +50,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
   },
-  btnText: { marginLeft: 8 }
+  btnText: { marginLeft: 8 },
 });

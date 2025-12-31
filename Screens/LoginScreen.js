@@ -28,7 +28,7 @@ export default function LoginScreen() {
 
       if (res.token) {
         // success
-        navigation.replace("App"); // Dashboard / Tabs
+        navigation.replace("DriverDashboard"); // Dashboard / Tabs
       } else {
         Alert.alert("Login Failed", res.message || "Invalid credentials");
       }
