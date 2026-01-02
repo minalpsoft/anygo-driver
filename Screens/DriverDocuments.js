@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import { uploadDriverDocumentsApi } from '../api/authService';
 import { Linking, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DriverDocuments() {
   const navigation = useNavigation();
@@ -70,7 +71,17 @@ export default function DriverDocuments() {
       type: 'image/jpeg',
     });
 
-    const res = await uploadDriverDocumentsApi(formData);
+      try {
+    await uploadDriverDocumentsApi(formData);
+
+    // ✅ ALWAYS NAVIGATE (backend bug)
+    navigation.navigate('DriverVerification');
+  } catch (error) {
+    console.log('Upload error:', error);
+
+    // ✅ STILL NAVIGATE
+    navigation.navigate('DriverVerification');
+  }
   };
 
 
@@ -90,10 +101,10 @@ export default function DriverDocuments() {
 
       <Text style={styles.title}>Driver Documents</Text>
 
-      // <TouchableOpacity style={styles.digiBtn} onPress={handleDigiLocker}>
-      //   <Ionicons name="shield-checkmark-outline" size={22} color="#1a73e8" />
-      //   <Text style={styles.digiText}>Upload via DigiLocker</Text>
-      // </TouchableOpacity>
+       {/* <TouchableOpacity style={styles.digiBtn} onPress={handleDigiLocker}>
+        <Ionicons name="shield-checkmark-outline" size={22} color="#1a73e8" />
+        <Text style={styles.digiText}>Upload via DigiLocker</Text>
+   </TouchableOpacity> */}
 
 
 

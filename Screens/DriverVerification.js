@@ -5,10 +5,61 @@ import AppInput from '../components/AppInput';
 import AppButton from '../components/AppButton';
 import { COLORS } from '../theme/colors';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useState } from 'react';
+import { verifyOtpApi } from '../api/authService';
+import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DriverVerification() {
   const navigation = useNavigation();
+
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+
+
+const handleVerifyOtp = async () => {
+  setLoading(true);
+
+  try {
+    const mobile = await AsyncStorage.getItem('otp_mobile');
+
+    if (!mobile) {
+      setLoading(false);
+      Alert.alert('Error', 'Mobile number missing');
+      return;
+    }
+
+    if (!otp) {
+      setLoading(false);
+      Alert.alert('Error', 'Please enter OTP');
+      return;
+    }
+
+    const res = await verifyOtpApi({ mobile, otp });
+
+    console.log('VERIFY OTP RESPONSE:', res);
+
+    if (res?.userType === 'driver') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DriverDashboard' }],
+      });
+    } else {
+      Alert.alert('Failed', res?.message || 'Invalid OTP');
+    }
+
+  } catch (error) {
+    console.log('OTP ERROR:', error);
+    Alert.alert('Error', 'OTP verification failed');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
 
   return (
     <LinearGradient
@@ -26,8 +77,19 @@ export default function DriverVerification() {
 
       <Text style={styles.title}>Driver Verification</Text>
 
-      <AppInput placeholder="Enter OTP" />
-      <AppButton title="Finish" onPress={() => navigation.navigate('DriverDashboard')} />
+      <AppInput
+        placeholder="Enter OTP"
+        keyboardType="number-pad"
+        maxLength={6}
+        value={otp}
+        onChangeText={setOtp}
+      />
+
+      <AppButton
+        title={loading ? 'Verifying...' : 'Finish'}
+        onPress={handleVerifyOtp}
+        disabled={loading}
+      />
 
     </LinearGradient>
   );

@@ -39,7 +39,7 @@ const [password, setPassword]= useState('');
     // ✅ ONLY CHECK TOKEN
     if (res?.token) {
       await AsyncStorage.setItem('driverToken', res.token);
-
+await AsyncStorage.setItem('otp_mobile', mobile);
       // 🔥 move to next step
       navigation.navigate('VehicleDetails');
     } else {

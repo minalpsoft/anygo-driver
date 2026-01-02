@@ -60,7 +60,6 @@ export const addVehicleApi = async (payload) => {
   return response.json();
 };
 
-
 export const uploadDriverDocumentsApi = async (formData) => {
   const token = await AsyncStorage.getItem('driverToken');
 
@@ -70,11 +69,22 @@ export const uploadDriverDocumentsApi = async (formData) => {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
-        // ❌ DO NOT set Content-Type manually
       },
       body: formData,
     }
   );
+
+  return response.json();
+};
+
+export const verifyOtpApi = async (payload) => {
+  const response = await fetch(`${API_BASE_URL}auth/verify-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
 
   return response.json();
 };
