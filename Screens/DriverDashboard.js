@@ -6,8 +6,31 @@ import Card from '../components/Card';
 import BottomTabs from '../components/BottomTabs';
 import TodayCard from '../components/TodayCard';
 import Divider from '../components/Divider';
+import { useState, useEffect } from 'react';
 
 export default function DriverDashboard({ navigation }) {
+    const [requests, setRequests] = useState([]);
+    const [ongoingTrip, setOngoingTrip] = useState(null);
+
+    useEffect(() => {
+        fetchRequests();
+    }, []);
+
+    const fetchRequests = async () => {
+        const res = await api.get('/drivers/pending-requests');
+        setRequests(res.data);
+    };
+
+    const acceptBooking = async (bookingId) => {
+        const res = await api.post(`/drivers/accept-booking/${bookingId}`);
+
+        navigation.navigate('OngoingTrip', {
+            bookingId: res.data.bookingId,
+            pickupDistance: res.data.driverToPickupDistanceKm,
+        });
+    };
+
+
     return (
         <View style={styles.container}>
 
@@ -36,65 +59,67 @@ export default function DriverDashboard({ navigation }) {
                     </View>
                     <Text style={styles.amount1}>Rs. 4350.00</Text>
 
-                     <Divider />
+                    <Divider />
 
                     <Text style={styles.linkSmall}>View Payment History &gt;&gt;</Text>
                 </Card>
 
                 {/* NEW REQUEST */}
-                <Card>
-                    {/* Header */}
-                    <View style={styles.headerRow}>
-                        <Text style={styles.cardTitle}>New Request</Text>
+                {requests.length === 0 ? (
+                    <Card>
+                        <Text style={{ textAlign: 'center', color: '#777' }}>
+                            No new requests
+                        </Text>
+                    </Card>
+                ) : (
+                    requests.map(req => (
+                        <Card key={req._id}>
+                            {/* Header */}
+                            <View style={styles.headerRow}>
+                                <Text style={styles.cardTitle}>New Request</Text>
 
-                        <Text style={styles.labourText}>2 Labour</Text>
+                                <Text style={styles.labourText}>
+                                    {req.labourCount} Labour
+                                </Text>
 
-                        <TouchableOpacity style={styles.acceptBtn}>
-                            <Text style={styles.acceptText}>Accept</Text>
-                        </TouchableOpacity>
-                    </View>
+                                <TouchableOpacity
+                                    style={styles.acceptBtn}
+                                    onPress={() => acceptBooking(req._id)}
+                                >
+                                    <Text style={styles.acceptText}>Accept</Text>
+                                </TouchableOpacity>
+                            </View>
 
-                    {/* Pickup Address */}
-                    <Text style={styles.label}>Pickup Point</Text>
-                    <Text>Imperial Heights Sector 21</Text>
-                    <Text>Kamothe Navi Mumbai</Text>
+                            {/* Pickup Address */}
+                            <Text style={styles.label}>Pickup Point</Text>
+                            <Text>{req.pickupLocation?.address}</Text>
 
-                    {/* Date & Time */}
-                    <View style={styles.dateTimeRow}>
-                        <View style={styles.dateTimeCol}>
-                            <Text style={styles.label}>Pickup Date</Text>
-                            <Text>20 Nov 2025</Text>
-                        </View>
+                            {/* Date & Time */}
+                            <View style={styles.dateTimeRow}>
+                                <View style={styles.dateTimeCol}>
+                                    <Text style={styles.label}>Pickup Date</Text>
+                                    <Text>{req.pickupDate}</Text>
+                                </View>
 
-                        <View style={styles.dateTimeCol}>
-                            <Text style={styles.label}>Pickup Time</Text>
-                            <Text>10:00 AM</Text>
-                        </View>
-                    </View>
+                                <View style={styles.dateTimeCol}>
+                                    <Text style={styles.label}>Pickup Time</Text>
+                                    <Text>{req.pickupTime}</Text>
+                                </View>
+                            </View>
 
-                     <Divider />
+                            <Divider />
 
+                            {/* Drop Point */}
+                            <Text style={styles.label}>Drop Point</Text>
+                            <Text>{req.dropLocation?.address}</Text>
 
-                    {/* drop point */}
-                    <Text style={styles.label}>Drop Point</Text>
-                    <Text>Hiramandi Estate Ghodbandar Road</Text>
-                    <Text>Thane</Text>
+                            <Text style={styles.linkSmall}>
+                                View Trip Details &gt;&gt;
+                            </Text>
+                        </Card>
+                    ))
+                )}
 
-                    {/* Date & Time */}
-                    <View style={styles.dateTimeRow}>
-                        <View style={styles.dateTimeCol}>
-                            <Text style={styles.label}>Drop Date</Text>
-                            <Text>20 Nov 2025</Text>
-                        </View>
-
-                        <View style={styles.dateTimeCol}>
-                            <Text style={styles.label}>Drop Time</Text>
-                            <Text>03:00 PM</Text>
-                        </View>
-                    </View>
-                    <Text style={styles.linkSmall}>View Trip Details &gt;&gt;</Text>
-
-                </Card>
 
                 {/* ONGOING TRIP */}
                 <Card>
@@ -107,7 +132,7 @@ export default function DriverDashboard({ navigation }) {
 
                     <Text style={{ marginBottom: "6" }}>Girish Phalak</Text>
 
-                     <Divider />
+                    <Divider />
 
                     <View style={styles.bottomRow}>
                         <TouchableOpacity style={styles.acceptBtn}>
@@ -117,6 +142,20 @@ export default function DriverDashboard({ navigation }) {
                         <Text style={styles.linkSmall}>View Trip Details &gt;&gt;</Text>
                     </View>
                 </Card>
+
+                {/* {ongoingTrip && (
+                    <Card>
+                        <Text>{ongoingTrip.customerName}</Text>
+                        <TouchableOpacity>
+                            <Text>Navigation</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={finishTrip}>
+                            <Text>Finish</Text>
+                        </TouchableOpacity>
+                    </Card>
+                )} */}
+
 
                 {/* PREVIOUS TRIP */}
                 <Card>
@@ -148,7 +187,7 @@ export default function DriverDashboard({ navigation }) {
                         </View>
                     </View>
 
-                     <Divider />
+                    <Divider />
 
 
                     {/* drop point */}
@@ -169,7 +208,7 @@ export default function DriverDashboard({ navigation }) {
                         </View>
                     </View>
 
-                     <Divider />
+                    <Divider />
 
                     <Text style={styles.linkSmall}>View Trip Details &gt;&gt;</Text>
 
@@ -271,7 +310,7 @@ const styles = StyleSheet.create({
     },
 
     acceptBtn: {
-        backgroundColor: 'rgba(227,30,36,0.1)', 
+        backgroundColor: 'rgba(227,30,36,0.1)',
         paddingHorizontal: 18,
         paddingVertical: 6,
         borderRadius: 20,
