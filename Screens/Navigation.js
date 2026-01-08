@@ -6,51 +6,51 @@ import Card from '../components/Card';
 import MapView, { Marker } from 'react-native-maps';
 import Divider from '../components/Divider';
 
-export default function Navigation({ navigation }) {
-    return (
-        <View style={styles.container}>
+export default function Navigation({ route, navigation }) {
+  const { booking, tripStarted } = route.params;
 
-            {/* HEADER */}
-            <AppHeader title="Navigation" navigation={navigation} />
+  const pickup = {
+    latitude: booking.pickupLocation.lat,
+    longitude: booking.pickupLocation.lng,
+  };
 
-            {/* CONTENT */}
-            <ScrollView
-                style={styles.content}
-                contentContainerStyle={{ paddingBottom: 80, marginTop: 20 }}
-                showsVerticalScrollIndicator={false} >
+  const drop = {
+    latitude: booking.dropLocation.lat,
+    longitude: booking.dropLocation.lng,
+  };
 
+  return (
+    <View style={styles.container}>
+      <AppHeader title="Navigation" navigation={navigation} />
 
-                <Card>
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.cardTitle}>Map Navigation</Text>
-                    </View>
+      <Card>
+        <Text style={styles.cardTitle}>Live Navigation</Text>
+        <Divider />
 
-                    <Divider />
+        <View style={styles.mapContainer}>
+          <MapView
+            style={StyleSheet.absoluteFillObject}
+            initialRegion={{
+              latitude: pickup.latitude,
+              longitude: pickup.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            {/* Pickup Marker */}
+            <Marker coordinate={pickup} title="Pickup" />
 
-                    {/* MAP */}
-                    <View style={styles.mapContainer}>
-                        <MapView
-                            style={StyleSheet.absoluteFillObject}
-                            initialRegion={{
-                                latitude: 18.5204,
-                                longitude: 73.8567,
-                                latitudeDelta: 0.01,
-                                longitudeDelta: 0.01,
-                            }}
-                        />
-                    </View>
-                </Card>
-
-
-            </ScrollView>
-
-
-            {/* BOTTOM TABS */}
-            <BottomTabs />
-
+            {/* Drop Marker ONLY after trip starts */}
+            {tripStarted && (
+              <Marker coordinate={drop} title="Drop" pinColor="green" />
+            )}
+          </MapView>
         </View>
-    );
+      </Card>
+    </View>
+  );
 }
+
 
 
 

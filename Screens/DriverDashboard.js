@@ -7,28 +7,130 @@ import BottomTabs from '../components/BottomTabs';
 import TodayCard from '../components/TodayCard';
 import Divider from '../components/Divider';
 import { useState, useEffect } from 'react';
+import { updateDriverLocation } from '../api/authService';
+import api from '../api/api';
+import { getAddressFromLatLng } from '../api/authService';
 
 export default function DriverDashboard({ navigation }) {
+
     const [requests, setRequests] = useState([]);
     const [ongoingTrip, setOngoingTrip] = useState(null);
+    const [isOnline, setIsOnline] = useState(false);
 
     useEffect(() => {
-        fetchRequests();
+        initDriver();
     }, []);
 
+    const initDriver = async () => {
+        try {
+            await updateDriverLocation();
+            await loadDashboard();
+            await fetchRequests();
+        } catch (e) {
+            // console.log('Init error 👉', e.message);
+        }
+    };
+
+    const loadDashboard = async () => {
+        const res = await api.get('/drivers/dashboard');
+        console.log('Dashboard API OK');
+    };
+
     const fetchRequests = async () => {
-        const res = await api.get('/drivers/pending-requests');
-        setRequests(res.data);
+        try {
+            const res = await api.get('/driver/booking-requests');
+            console.log('🟢 BOOKINGS 👉', res.data);
+            setRequests(res.data);
+        } catch (e) {
+            console.log('❌ FETCH ERROR 👉', e.response?.data || e.message);
+        }
     };
 
-    const acceptBooking = async (bookingId) => {
-        const res = await api.post(`/drivers/accept-booking/${bookingId}`);
+    useEffect(() => {
+        if (!requests.length) return;
 
-        navigation.navigate('OngoingTrip', {
-            bookingId: res.data.bookingId,
-            pickupDistance: res.data.driverToPickupDistanceKm,
-        });
+        const loadAddresses = async () => {
+            console.log('📍 Resolving addresses...');
+
+            const updated = await Promise.all(
+                requests.map(async req => {
+                    const pickupAddress = await getAddressFromLatLng(
+                        req.pickupLocation.lat,
+                        req.pickupLocation.lng
+                    );
+
+                    const dropAddress = await getAddressFromLatLng(
+                        req.dropLocation.lat,
+                        req.dropLocation.lng
+                    );
+
+                    return {
+                        ...req,
+                        pickupAddress,
+                        dropAddress,
+                    };
+                })
+            );
+
+            setRequests(updated);
+        };
+
+        loadAddresses();
+    }, [requests.length]);
+
+    const toggleOnline = async () => {
+        try {
+            if (!isOnline) {
+                await updateDriverLocation();
+            }
+
+            const res = await api.patch('/driver/driver-status', {
+                isOnline: !isOnline,
+            });
+
+            const newStatus = !isOnline;
+            setIsOnline(newStatus);
+
+            if (newStatus) {
+                console.log('🟢 Driver ONLINE → fetching bookings');
+                await fetchRequests();
+            } else {
+                setRequests([]);
+            }
+
+            alert(res.data.message);
+        } catch (e) {
+            console.log('❌ STATUS ERROR 👉', e.response?.data || e.message);
+        }
     };
+
+    const acceptBooking = async (req) => {
+        try {
+            const res = await api.post(`/driver/${req._id}/accept`);
+
+            console.log('✅ Booking accepted', res.data);
+
+            setRequests([]);
+            setOngoingTrip(req);
+
+            navigation.navigate('Navigation', {
+                booking: req,
+            });
+
+        } catch (err) {
+            if (
+                err.response?.data?.message === 'Route not found'
+            ) {
+                // booking is already accepted
+                navigation.replace('Navigation', { booking: req });
+                return;
+            }
+
+            Alert.alert('Trip unavailable', err.response?.data?.message);
+        }
+
+    };
+
 
 
     return (
@@ -37,13 +139,25 @@ export default function DriverDashboard({ navigation }) {
             {/* HEADER */}
             <AppHeader title="Dashboard" navigation={navigation} />
 
+            <TouchableOpacity
+                onPress={toggleOnline}
+                style={[
+                    styles.statusBtn,
+                    { backgroundColor: isOnline ? '#2ecc71' : '#e74c3c' },
+                ]}
+            >
+                <Text style={{ color: '#fff' }}>
+                    {isOnline ? 'ONLINE' : 'OFFLINE'}
+                </Text>
+            </TouchableOpacity>
+
 
             <ScrollView showsVerticalScrollIndicator={false}>
 
                 {/* TODAY EARNINGS */}
                 <TodayCard
                     title="Today"
-                    amount="2244.00"
+                    amount="2444.00"
                     trips={4}
                     hours="7H"
                 />
@@ -64,155 +178,115 @@ export default function DriverDashboard({ navigation }) {
                     <Text style={styles.linkSmall}>View Payment History &gt;&gt;</Text>
                 </Card>
 
+
                 {/* NEW REQUEST */}
-                {requests.length === 0 ? (
-                    <Card>
-                        <Text style={{ textAlign: 'center', color: '#777' }}>
-                            No new requests
-                        </Text>
-                    </Card>
-                ) : (
-                    requests.map(req => (
-                        <Card key={req._id}>
-                            {/* Header */}
-                            <View style={styles.headerRow}>
-                                <Text style={styles.cardTitle}>New Request</Text>
-
-                                <Text style={styles.labourText}>
-                                    {req.labourCount} Labour
-                                </Text>
-
-                                <TouchableOpacity
-                                    style={styles.acceptBtn}
-                                    onPress={() => acceptBooking(req._id)}
-                                >
-                                    <Text style={styles.acceptText}>Accept</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Pickup Address */}
-                            <Text style={styles.label}>Pickup Point</Text>
-                            <Text>{req.pickupLocation?.address}</Text>
-
-                            {/* Date & Time */}
-                            <View style={styles.dateTimeRow}>
-                                <View style={styles.dateTimeCol}>
-                                    <Text style={styles.label}>Pickup Date</Text>
-                                    <Text>{req.pickupDate}</Text>
-                                </View>
-
-                                <View style={styles.dateTimeCol}>
-                                    <Text style={styles.label}>Pickup Time</Text>
-                                    <Text>{req.pickupTime}</Text>
-                                </View>
-                            </View>
-
-                            <Divider />
-
-                            {/* Drop Point */}
-                            <Text style={styles.label}>Drop Point</Text>
-                            <Text>{req.dropLocation?.address}</Text>
-
-                            <Text style={styles.linkSmall}>
-                                View Trip Details &gt;&gt;
+                {!ongoingTrip && (
+                    requests.length === 0 ? (
+                        <Card>
+                            <Text style={{ textAlign: 'center', color: '#777' }}>
+                                No new requests
                             </Text>
                         </Card>
-                    ))
+                    ) : (
+                        requests.map(req => {
+                            const pickupDate = new Date(req.createdAt).toLocaleDateString();
+                            const pickupTime = new Date(req.createdAt).toLocaleTimeString();
+
+                            return (
+                                <Card key={req._id}>
+                                    <View style={styles.headerRow}>
+                                        <Text style={styles.cardTitle}>New Request</Text>
+
+                                        {req.status === 'DRIVER_NOTIFIED' && (
+                                            <TouchableOpacity
+                                                style={styles.acceptBtn}
+                                                onPress={() => acceptBooking(req)}
+                                            >
+                                                <Text style={styles.acceptText}>Accept</Text>
+                                            </TouchableOpacity>
+                                        )}
+
+                                    </View>
+
+                                    <Text style={styles.label}>Pickup Point</Text>
+                                    <Text>
+                                        {req.pickupAddress || 'Resolving location...'}
+                                    </Text>
+
+                                    <View style={styles.dateTimeRow}>
+                                        <View style={styles.dateTimeCol}>
+                                            <Text style={styles.label}>Pickup Date</Text>
+                                            <Text>{pickupDate}</Text>
+                                        </View>
+
+                                        <View style={styles.dateTimeCol}>
+                                            <Text style={styles.label}>Pickup Time</Text>
+                                            <Text>{pickupTime}</Text>
+                                        </View>
+                                    </View>
+
+                                    <Divider />
+
+                                    <Text style={styles.label}>Drop Point</Text>
+                                    <Text>
+                                        {req.dropAddress || 'Resolving location...'}
+                                    </Text>
+
+                                    <Text style={{ marginTop: 6, color: '#555' }}>
+                                        📏 {req.distanceKm} km • ⏳ {req.durationMin} min
+                                    </Text>
+
+                                    <Text style={styles.linkSmall}>
+                                        View Trip Details &gt;&gt;
+                                    </Text>
+                                </Card>
+                            );
+                        })
+                    )
                 )}
 
 
+
                 {/* ONGOING TRIP */}
-                <Card>
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.cardTitle}>OnGoing Trip</Text>
-                        <TouchableOpacity style={styles.acceptBtn}>
-                            <Text style={styles.link}>Navigation</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <Text style={{ marginBottom: "6" }}>Girish Phalak</Text>
-
-                    <Divider />
-
-                    <View style={styles.bottomRow}>
-                        <TouchableOpacity style={styles.acceptBtn}>
-                            <Text style={styles.link}>Finish</Text>
-                        </TouchableOpacity>
-
-                        <Text style={styles.linkSmall}>View Trip Details &gt;&gt;</Text>
-                    </View>
-                </Card>
-
-                {/* {ongoingTrip && (
+                {ongoingTrip && (
                     <Card>
-                        <Text>{ongoingTrip.customerName}</Text>
-                        <TouchableOpacity>
-                            <Text>Navigation</Text>
-                        </TouchableOpacity>
+                        <View style={styles.rowBetween}>
+                            <Text style={styles.cardTitle}>Ongoing Trip</Text>
 
-                        <TouchableOpacity onPress={finishTrip}>
-                            <Text>Finish</Text>
+                            <TouchableOpacity
+                                style={styles.acceptBtn}
+                                onPress={() =>
+                                    navigation.navigate('Navigation', {
+                                        booking: ongoingTrip,
+                                    })
+                                }
+                            >
+                                <Text style={styles.link}>Navigation</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={styles.label}>Pickup</Text>
+                        <Text>{ongoingTrip.pickupAddress}</Text>
+
+                        <Divider />
+
+                        <TouchableOpacity
+                            style={[styles.acceptBtn, { marginTop: 10 }]}
+                            onPress={async () => {
+                                await api.post(`/drivers/start-trip/${ongoingTrip.bookingId}`);
+                                setOngoingTrip({ ...ongoingTrip, status: 'STARTED' });
+
+                                navigation.navigate('Navigation', {
+                                    booking: ongoingTrip,
+                                    tripStarted: true,
+                                });
+                            }}
+                        >
+                            <Text style={styles.acceptText}>Start Trip</Text>
                         </TouchableOpacity>
                     </Card>
-                )} */}
+                )}
 
-
-                {/* PREVIOUS TRIP */}
-                <Card>
-                    {/* Header */}
-                    <View style={styles.headerRow}>
-                        <Text style={styles.cardTitle}>Previous Trip</Text>
-                    </View>
-
-                    {/* Pickup Address */}
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.label}>Pickup Point</Text>
-                        <Text style={styles.amountSmall}>Rs. 1349.00</Text>
-                    </View>
-
-
-                    <Text>Hiramandi Estate Ghodbandar Road</Text>
-                    <Text>Thane</Text>
-
-                    {/* Date & Time */}
-                    <View style={styles.dateTimeRow}>
-                        <View style={styles.dateTimeCol}>
-                            <Text style={styles.label}>Pickup Date</Text>
-                            <Text>20 Nov 2025</Text>
-                        </View>
-
-                        <View style={styles.dateTimeCol}>
-                            <Text style={styles.label}>Pickup Time</Text>
-                            <Text>08:00 AM</Text>
-                        </View>
-                    </View>
-
-                    <Divider />
-
-
-                    {/* drop point */}
-                    <Text style={styles.label}>Drop Point</Text>
-                    <Text>Imperial Heights Sector 21</Text>
-                    <Text>Kamothe Navi Mumbai</Text>
-
-                    {/* Date & Time */}
-                    <View style={styles.dateTimeRow}>
-                        <View style={styles.dateTimeCol}>
-                            <Text style={styles.label}>Drop Date</Text>
-                            <Text>20 Nov 2025</Text>
-                        </View>
-
-                        <View style={styles.dateTimeCol}>
-                            <Text style={styles.label}>Drop Time</Text>
-                            <Text>10:00 PM</Text>
-                        </View>
-                    </View>
-
-                    <Divider />
-
-                    <Text style={styles.linkSmall}>View Trip Details &gt;&gt;</Text>
-
-                </Card>
 
                 {/* QR CODE */}
                 <View style={styles.qrCard}>

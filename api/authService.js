@@ -1,16 +1,34 @@
 import { API_BASE_URL } from '../api/api'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
+import api from '../api/api';
+
+const GOOGLE_API_KEY = 'AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo';
 
 export const loginApi = async (mobile, password) => {
-  const response = await fetch(`${API_BASE_URL}auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ mobile, password }),
-  });
+  try {
+    // console.log('📡 LOGIN REQUEST 👉', mobile);
 
-  return response.json();
+    const res = await api.post('/auth/login', {
+      mobile,
+      password,
+    });
+
+    // console.log('✅ LOGIN RESPONSE 👉', res.data);
+
+    // 🔑 SAVE TOKEN (CRITICAL)
+    await AsyncStorage.setItem('token', res.data.token);
+
+    // console.log(
+    //   '💾 TOKEN STORED 👉',
+    //   await AsyncStorage.getItem('token')
+    // );
+
+    return res.data;
+  } catch (e) {
+    // console.log('❌ LOGIN ERROR 👉', e.response?.data || e.message);
+    throw e;
+  }
 };
 
 export const ownerRegisterApi = async (payload) => {
@@ -88,3 +106,52 @@ export const verifyOtpApi = async (payload) => {
 
   return response.json();
 };
+
+export const updateDriverLocation = async () => {
+  // console.log('📍 Updating driver location...');
+
+  const { status } = await Location.requestForegroundPermissionsAsync();
+  // console.log('📍 Location permission 👉', status);
+
+  if (status !== 'granted') {
+    throw new Error('Location permission denied');
+  }
+
+  const location = await Location.getCurrentPositionAsync({
+    accuracy: Location.Accuracy.High,
+  });
+
+  const lat = location.coords.latitude;
+  const lng = location.coords.longitude;
+
+  // console.log('📍 GPS COORDS 👉', lat, lng);
+
+  const res = await api.post('/driver/location', {
+    lat,
+    lng,
+  });
+
+  console.log('📍 LOCATION SAVED 👉', res.data);
+
+  return { lat, lng };
+};
+
+export const getAddressFromLatLng = async (lat, lng) => {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    // console.log('🌍 GOOGLE GEO RESPONSE 👉', lat, lng, data.status);
+
+    if (data.status === 'OK' && data.results.length > 0) {
+      return data.results[0].formatted_address;
+    }
+
+    return 'Location not available';
+  } catch (err) {
+    // console.log('❌ GEO ERROR 👉', err.message);
+    return 'Location not available';
+  }
+};
+

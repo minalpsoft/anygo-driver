@@ -46,7 +46,7 @@ export default function LoginScreen() {
       style={styles.container}
     >
 
-      <AppLogo />
+      {/* <AppLogo /> */}
 
       <Text style={styles.title}>Driver Login</Text>
 
