@@ -19,32 +19,67 @@ export default function OwnerRegistration() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+// const handleOwnerRegister = async () => {
+//   console.log("NEXT BUTTON CLICKED");
+// console.log("REGISTER API PAYLOAD:", payload);
+//   if (!firstName || !lastName || !mobile || !email || !password) {
+//     Alert.alert("Error", "All fields are required");
+//     return;
+//   }
+
+//   try {
+//     const res = await ownerRegisterApi({
+//       firstName,
+//       lastName,
+//       mobile,
+//       email,
+//       password
+//     });
+
+//     console.log("OWNER REGISTER RESPONSE:", res);
+
+//     if (res?.data?._id) {
+//       await AsyncStorage.setItem('ownerId', res.data._id);
+//       console.log("NAVIGATING TO DriverDetails");
+
+//       navigation.navigate('DriverDetails');
+//     } else {
+//       Alert.alert("API ERROR", JSON.stringify(res));
+//     }
+
+//   } catch (err) {
+//     console.log("FETCH FAILED:", err);
+//     Alert.alert("Network Error", "Cannot reach server");
+//   }
+// };
+
 const handleOwnerRegister = async () => {
   console.log("NEXT BUTTON CLICKED");
-console.log("REGISTER API PAYLOAD:", payload);
+
+  const payload = {
+    firstName,
+    lastName,
+    mobile,
+    email,
+    password
+  };
+
+  console.log("REGISTER API PAYLOAD:", payload);
+
   if (!firstName || !lastName || !mobile || !email || !password) {
     Alert.alert("Error", "All fields are required");
     return;
   }
 
   try {
-    const res = await ownerRegisterApi({
-      firstName,
-      lastName,
-      mobile,
-      email,
-      password
-    });
+    const res = await ownerRegisterApi(payload);
 
     console.log("OWNER REGISTER RESPONSE:", res);
 
     if (res?.data?._id) {
       await AsyncStorage.setItem('ownerId', res.data._id);
       navigation.navigate('DriverDetails');
-    } else {
-      Alert.alert("API ERROR", JSON.stringify(res));
     }
-
   } catch (err) {
     console.log("FETCH FAILED:", err);
     Alert.alert("Network Error", "Cannot reach server");
@@ -72,7 +107,7 @@ console.log("REGISTER API PAYLOAD:", payload);
       <AppInput placeholder="Enter Your Last Name" value={lastName} onChangeText={setLastName} />
       <AppInput placeholder="Enter Your Mobile Number" value={mobile} onChangeText={setMobile} />
       <AppInput placeholder="Enter Your Email" value={email} onChangeText={setEmail} />
-      <AppInput placeholder="Enter Password" value={password} onChangeText={setPassword} />
+      <AppInput placeholder="Enter Password" secureTextEntry value={password} onChangeText={setPassword} />
 
       <AppButton title="Next" onPress={handleOwnerRegister} />
 

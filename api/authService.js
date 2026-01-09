@@ -1,9 +1,10 @@
-import { API_BASE_URL } from '../api/api'
+// import { API_BASE_URL } from '../api/api'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import api from '../api/api';
 
 const GOOGLE_API_KEY = 'AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo';
+const API_BASE_URL = 'http://192.168.31.89:3000/'
 
 export const loginApi = async (mobile, password) => {
   try {

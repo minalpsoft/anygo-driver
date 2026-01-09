@@ -73,7 +73,7 @@ await AsyncStorage.setItem('otp_mobile', mobile);
       <AppInput placeholder="Driver's Last Name" value={lastName} onChangeText={setLastName} />
       <AppInput placeholder="Driver's Mobile Number" value={mobile} onChangeText={setMobile} />
       <AppInput placeholder="Emergency Mobile Number" value={emergencyMobile} onChangeText={setEmergencyMobile} />
-      <AppInput placeholder="Enter Password" value={password} onChangeText={setPassword} />
+      <AppInput placeholder="Enter Password" secureTextEntry value={password} onChangeText={setPassword} />
 
       <AppButton title="Next" onPress={handleDriverRegister} />
 
