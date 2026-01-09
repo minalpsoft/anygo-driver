@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../theme/colors';
 import AppHeader from '../components/AppHeader';
@@ -23,7 +23,7 @@ export default function DriverDashboard({ navigation }) {
 
     const initDriver = async () => {
         try {
-            await updateDriverLocation();
+            // await updateDriverLocation();
             await loadDashboard();
             await fetchRequests();
         } catch (e) {
@@ -104,32 +104,75 @@ export default function DriverDashboard({ navigation }) {
         }
     };
 
+// const acceptBooking = async (req) => {
+//         try {
+//             const res = await api.post(`/driver/${req._id}/accept`);
+
+//             console.log('✅ Booking accepted', res.data);
+
+//             // Clear request list immediately
+//             // setRequests([]);
+
+//             // Show success alert
+//             Alert.alert(
+//                 'Booking Accepted 🚗',
+//                 'Navigation will start now',
+//                 [
+//                     {
+//                         text: 'OK',
+//                         onPress: () => {
+//                             navigation.navigate('Navigation', {
+//                                 booking: req,       // ✅ use req
+//                                 tripStarted: false, // ✅ correct
+//                             });
+//                             setRequests([]);
+//                         },
+//                     },
+//                 ]
+//             );
+
+
+//         } catch (err) {
+//             const msg = err.response?.data?.message;
+
+//             // If already accepted, still navigate
+//             if (msg === 'Route not found' || msg === 'Already assigned') {
+//                 navigation.replace('Navigation', { booking: req });
+//                 return;
+//             }
+
+//             Alert.alert('Trip unavailable', msg || 'Something went wrong');
+//         }
+//     };
+
     const acceptBooking = async (req) => {
-        try {
-            const res = await api.post(`/driver/${req._id}/accept`);
+  try {
+    console.log('🔥 ACCEPT CLICKED', req._id);
 
-            console.log('✅ Booking accepted', res.data);
+    await api.post(`/driver/${req._id}/accept`);
 
-            setRequests([]);
-            setOngoingTrip(req);
+    Alert.alert('Booking Accepted 🚗', 'Navigation will start now');
 
-            navigation.navigate('Navigation', {
-                booking: req,
-            });
+    setTimeout(() => {
+      setRequests([]);
+      navigation.navigate('Navigation', {
+        booking: req,
+        tripStarted: false,
+      });
+    }, 300);
 
-        } catch (err) {
-            if (
-                err.response?.data?.message === 'Route not found'
-            ) {
-                // booking is already accepted
-                navigation.replace('Navigation', { booking: req });
-                return;
-            }
+  } catch (err) {
+    console.log('❌ ACCEPT ERROR', err.response?.data || err.message);
 
-            Alert.alert('Trip unavailable', err.response?.data?.message);
-        }
+    // DB already updated → continue anyway
+    navigation.navigate('Navigation', {
+      booking: req,
+      tripStarted: false,
+    });
+  }
+};
 
-    };
+
 
 
 

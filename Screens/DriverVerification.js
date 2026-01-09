@@ -43,7 +43,7 @@ const handleVerifyOtp = async () => {
     if (res?.userType === 'driver') {
       navigation.reset({
         index: 0,
-        routes: [{ name: 'DriverDashboard' }],
+        routes: [{ name: 'Login' }],
       });
     } else {
       Alert.alert('Failed', res?.message || 'Invalid OTP');

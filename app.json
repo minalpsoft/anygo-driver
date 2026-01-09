@@ -15,6 +15,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FF1E1E"
       },
+       "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo"
+        }
+      },
       "package": "com.minalpsoft.anygo"
     },
     "plugins": [

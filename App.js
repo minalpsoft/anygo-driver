@@ -9,6 +9,7 @@ import DriverVerification from './Screens/DriverVerification';
 import DriverDetails from './Screens/DriverDetails';
 import DrawerNavigator from './Navigation/DrawerNavigator';
 import TodayCard from './components/TodayCard';
+import Navigation from './Screens/Navigation';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ export default function App() {
         <Stack.Screen name="DriverDetails" component={DriverDetails} />
         <Stack.Screen name="DriverVerification" component={DriverVerification} />
         <Stack.Screen name="TodayCard" component={TodayCard} />
+        <Stack.Screen name="Navigation" component={Navigation} />
 
         {/* APP FLOW */}
         <Stack.Screen name="DriverDashboard" component={DrawerNavigator} />

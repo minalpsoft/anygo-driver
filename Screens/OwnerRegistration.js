@@ -21,7 +21,7 @@ export default function OwnerRegistration() {
 
 const handleOwnerRegister = async () => {
   console.log("NEXT BUTTON CLICKED");
-
+console.log("REGISTER API PAYLOAD:", payload);
   if (!firstName || !lastName || !mobile || !email || !password) {
     Alert.alert("Error", "All fields are required");
     return;
