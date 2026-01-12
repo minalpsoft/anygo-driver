@@ -17,7 +17,6 @@ button: {
   alignItems: 'center',
   marginTop: 10,
   elevation: 4,
-  marginBottom: 40
 },
 
 

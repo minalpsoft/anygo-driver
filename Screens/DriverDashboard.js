@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { updateDriverLocation } from '../api/authService';
 import api from '../api/api';
 import { getAddressFromLatLng } from '../api/authService';
+import { getDriverEarningsApi } from '../api/authService';
 
 export default function DriverDashboard({ navigation }) {
 
@@ -104,47 +105,6 @@ export default function DriverDashboard({ navigation }) {
         }
     };
 
-// const acceptBooking = async (req) => {
-//         try {
-//             const res = await api.post(`/driver/${req._id}/accept`);
-
-//             console.log('✅ Booking accepted', res.data);
-
-//             // Clear request list immediately
-//             // setRequests([]);
-
-//             // Show success alert
-//             Alert.alert(
-//                 'Booking Accepted 🚗',
-//                 'Navigation will start now',
-//                 [
-//                     {
-//                         text: 'OK',
-//                         onPress: () => {
-//                             navigation.navigate('Navigation', {
-//                                 booking: req,       // ✅ use req
-//                                 tripStarted: false, // ✅ correct
-//                             });
-//                             setRequests([]);
-//                         },
-//                     },
-//                 ]
-//             );
-
-
-//         } catch (err) {
-//             const msg = err.response?.data?.message;
-
-//             // If already accepted, still navigate
-//             if (msg === 'Route not found' || msg === 'Already assigned') {
-//                 navigation.replace('Navigation', { booking: req });
-//                 return;
-//             }
-
-//             Alert.alert('Trip unavailable', msg || 'Something went wrong');
-//         }
-//     };
-
     const acceptBooking = async (req) => {
   try {
     console.log('🔥 ACCEPT CLICKED', req._id);
@@ -172,8 +132,26 @@ export default function DriverDashboard({ navigation }) {
   }
 };
 
+// shhow earnings
+ const [earnings, setEarnings] = useState(null);
 
+    useEffect(() => {
+        const loadEarnings = async () => {
+            try {
+                const res = await getDriverEarningsApi();
+                setEarnings(res.data);
+            } catch (err) {
+                console.log('❌ EARNINGS ERROR', err?.response?.data || err.message);
+            }
+        };
 
+        loadEarnings();
+    }, []);
+
+const formatDuration = (mins = 0) => {
+  if (mins < 60) return `${mins} min`;
+  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+};
 
 
     return (
@@ -200,9 +178,9 @@ export default function DriverDashboard({ navigation }) {
                 {/* TODAY EARNINGS */}
                 <TodayCard
                     title="Today"
-                    amount="2444.00"
-                    trips={4}
-                    hours="7H"
+                    amount={earnings?.totalEarnings || 0}
+                    trips={earnings?.tripsCount || 0}
+                    hours={formatDuration(earnings?.today?.durationMin)}
                 />
 
 

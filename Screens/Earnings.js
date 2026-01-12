@@ -6,8 +6,26 @@ import Card from '../components/Card';
 import BottomTabs from '../components/BottomTabs';
 import TodayCard from '../components/TodayCard';
 import Divider from '../components/Divider';
+import { useEffect, useState } from 'react';
+import { getDriverEarningsApi } from '../api/authService';
 
 export default function Earnings({ navigation }) {
+
+    const [earnings, setEarnings] = useState(null);
+
+    useEffect(() => {
+        const loadEarnings = async () => {
+            try {
+                const res = await getDriverEarningsApi();
+                setEarnings(res.data);
+            } catch (err) {
+                console.log('❌ EARNINGS ERROR', err?.response?.data || err.message);
+            }
+        };
+
+        loadEarnings();
+    }, []);
+
     return (
         <View style={styles.container}>
 
@@ -19,10 +37,11 @@ export default function Earnings({ navigation }) {
 
                 <TodayCard
                     title="Total Balance"
-                    amount="2244.00"
-                    trips={12}
-                     centerTrips={true}
+                    amount={earnings?.totalEarnings || 0}
+                    trips={earnings?.tripsCount || 0}
+                    centerTrips
                 />
+
 
 
                 {/* WALLET */}
@@ -38,25 +57,18 @@ export default function Earnings({ navigation }) {
 
                     <Divider />
 
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>18 Nov 2025</Text>
-                        <Text style={styles.amount1}>Rs. 350.00</Text>
-                    </View>
+                    {earnings?.trips?.map((trip) => (
+                        <View style={styles.rowBetween} key={trip.id}>
+                            <Text style={styles.amount1}>
+                                {new Date(trip.date).toDateString()}
+                            </Text>
+                            <Text style={styles.amount1}>
+                                ₹ {trip.earning}
+                            </Text>
+                        </View>
+                    ))}
 
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>17 Nov 2025</Text>
-                        <Text style={styles.amount1}>Rs. 350.00</Text>
-                    </View>
 
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>16 Nov 2025</Text>
-                        <Text style={styles.amount1}>Rs. 730.00</Text>
-                    </View>
-
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>15 Nov 2025</Text>
-                        <Text style={styles.amount1}>Rs. 2300.00</Text>
-                    </View>
 
                 </Card>
 
@@ -75,21 +87,22 @@ export default function Earnings({ navigation }) {
 
                     <Divider />
 
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>18 Nov 2025</Text>
-                        <Text style={styles.amount1}>Rs. 1250.00</Text>
-                    </View>
-
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>17 Nov 2025</Text>
-                        <Text style={styles.amount1}>Rs. 350.00</Text>
-                    </View>
-
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>16 Nov 2025</Text>
-                        <Text style={styles.amount1}>Rs. 300.00</Text>
-                    </View>
-
+                    {earnings?.withdrawalHistory?.length > 0 ? (
+                        earnings.withdrawalHistory.map((item) => (
+                            <View style={styles.rowBetween} key={item.id}>
+                                <Text style={styles.amount1}>
+                                    {new Date(item.requestedAt).toDateString()}
+                                </Text>
+                                <Text style={styles.amount1}>
+                                    ₹ {item.amount}
+                                </Text>
+                            </View>
+                        ))
+                    ) : (
+                        <Text style={{ textAlign: 'center', color: '#777' }}>
+                            No withdrawals yet
+                        </Text>
+                    )}
                 </Card>
 
 

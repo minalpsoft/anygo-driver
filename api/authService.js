@@ -2,6 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import api from '../api/api';
+import axios from 'axios';
 
 const GOOGLE_API_KEY = 'AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo';
 const API_BASE_URL = 'http://192.168.31.89:3000/'
@@ -156,3 +157,43 @@ export const getAddressFromLatLng = async (lat, lng) => {
   }
 };
 
+export const startTripApi = async (bookingId) => {
+  const token = await AsyncStorage.getItem('token');
+
+  return axios.post(
+    `${API_BASE_URL}driver/trips/start`,
+    { bookingId },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const completeTripApi = async (bookingId) => {
+  const token = await AsyncStorage.getItem('token');
+
+  return axios.post(
+    `${API_BASE_URL}driver/trips/complete`,
+    { bookingId },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const getDriverEarningsApi = async () => {
+  const token = await AsyncStorage.getItem('token');
+
+  return axios.get(
+    `${API_BASE_URL}driver/Driver-earnings`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
