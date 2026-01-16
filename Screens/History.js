@@ -6,59 +6,91 @@ import Card from '../components/Card';
 import BottomTabs from '../components/BottomTabs';
 import TodayCard from '../components/TodayCard';
 import Divider from '../components/Divider';
+import { useState, useEffect } from 'react';
+import { getCompletedTrips, getAddressFromLatLng } from '../api/authService';
 
 export default function History({ navigation }) {
+
+    const [history, setHistory] = useState([]);
+    const [totalTrips, setTotalTrips] = useState(0);
+    const [addresses, setAddresses] = useState({});
+
+    useEffect(() => {
+        loadHistory();
+    }, []);
+
+    const loadHistory = async () => {
+        try {
+            const res = await getCompletedTrips();
+            setHistory(res.trips || []);
+            setTotalTrips(res.summary?.totalTrips || 0);
+
+            // 🔹 Fetch readable drop addresses
+            const addrMap = {};
+
+            for (const trip of res.trips) {
+                const addr = await getAddressFromLatLng(
+                    trip.drop.lat,
+                    trip.drop.lng
+                );
+                addrMap[trip.bookingId] = addr;
+            }
+
+            setAddresses(addrMap);
+
+        } catch (e) {
+            console.log('History load error', e);
+        }
+    };
+
+
     return (
         <View style={styles.container}>
 
-            {/* HEADER */}
             <AppHeader title="History" navigation={navigation} />
-
 
             <ScrollView showsVerticalScrollIndicator={false}>
 
-                {/* TODAY EARNINGS */}
                 <TodayCard
                     title="Total Trips"
-                  value={12}       
-                    centerTrips={true}
+                    value={totalTrips}
+                    centerTrips
                 />
 
-                {/* trip history */}
-                <Card>
-                    <View style={styles.rowBetween}>
-                        <View>
-                            <Text style={styles.cardTitle}>Trip History</Text>
+                {history.map(trip => (
+                    
+                    <Card key={trip.bookingId}>
+                        <View style={styles.rowBetween}>
+                            <Text style={styles.amount1}>
+                                {new Date(trip.date).toDateString()}
+                            </Text>
+                            <Text style={styles.amount1}>
+                                ₹ {trip.fare}
+                            </Text>
                         </View>
-                    </View>
 
-                    <Divider />
+                        <Divider />
 
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>18 Nov 2025</Text>
-                        <Text style={styles.amount1}>Thane</Text>
-                    </View>
+                        <Text style={styles.subText}>
+                            {addresses[trip.bookingId] || 'Fetching location...'}
+                        </Text>
 
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>17 Nov 2025</Text>
-                        <Text style={styles.amount1}>Panvel</Text>
-                    </View>
+                    </Card>
+                ))}
 
-                    <View style={styles.rowBetween}>
-                        <Text style={styles.amount1}>16 Nov 2025</Text>
-                        <Text style={styles.amount1}>Bhivandi</Text>
-                    </View>
-
-                </Card>
+                {history.length === 0 && (
+                    <Text style={{ textAlign: 'center', marginTop: 20, color: COLORS.gray }}>
+                        No completed trips yet
+                    </Text>
+                )}
 
             </ScrollView>
 
-            {/* BOTTOM TABS */}
             <BottomTabs />
-
         </View>
     );
 }
+
 
 
 

@@ -9,9 +9,35 @@ import MapViewDirections from 'react-native-maps-directions';
 import { startTripApi } from '../api/authService';
 import { AnimatedRegion } from 'react-native-maps';
 import { completeTripApi } from '../api/authService';
+const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-export default function Navigation({ route, navigation }) {
-  const { booking, tripStarted } = route.params;
+export default function Navigation({ route = {}, navigation }) {
+  // const { booking, tripStarted } = route.params;
+  const booking = route?.params?.booking;
+  const tripStarted = route?.params?.tripStarted || false;
+
+  if (!booking) {
+    return (
+      <View style={styles.container}>
+        <AppHeader title="Navigation" navigation={navigation} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 16, color: COLORS.gray }}>
+            No active trip found
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.startBtn, { marginTop: 20 }]}
+            onPress={() => navigation.replace('DriverDashboard')}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+              Go to Dashboard
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   const [currentLocation, setCurrentLocation] = useState(null);
   const [arrivedAtPickup, setArrivedAtPickup] = useState(false);
   const [arrivedAtDrop, setArrivedAtDrop] = useState(false);
@@ -27,7 +53,7 @@ export default function Navigation({ route, navigation }) {
 
   const mapRef = useRef(null);
 
-  const GOOGLE_API_KEY = 'AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo'; // ⚠️ move to env later
+  // const GOOGLE_API_KEY = 'AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo'; // ⚠️ move to env later
 
   const getDistanceInMeters = (lat1, lon1, lat2, lon2) => {
     const R = 6371000; // meters
@@ -197,7 +223,7 @@ export default function Navigation({ route, navigation }) {
       <AppHeader title="Navigation" navigation={navigation} />
 
       <View style={styles.mapWrapper}>
-        <Text style={styles.cardTitle}>Live Navigation till pickup point</Text>
+        <Text style={styles.cardTitle}>Live Navigation</Text>
         <Divider />
 
         <MapView
@@ -294,8 +320,6 @@ export default function Navigation({ route, navigation }) {
             </TouchableOpacity>
           </View>
         )}
-
-
 
       </View>
     </View>

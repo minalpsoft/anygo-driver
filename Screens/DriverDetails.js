@@ -13,44 +13,44 @@ import { Alert } from 'react-native';
 
 export default function DriverDetails() {
   const navigation = useNavigation();
-const [firstName, setFirstName] = useState('');
+  const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [mobile, setMobile] = useState('');
   const [emergencyMobile, setEmergencyMobile] = useState('');
-const [password, setPassword]= useState('');
+  const [password, setPassword] = useState('');
 
- const handleDriverRegister = async () => {
-  if (!firstName || !lastName || !mobile || !emergencyMobile || !password) {
-    Alert.alert('Error', 'All fields are required');
-    return;
-  }
-
-  try {
-    const res = await registerDriverApi({
-      firstName,
-      lastName,
-      mobile,
-      emergencyMobile,
-      password
-    });
-
-    console.log('DRIVER REGISTER RESPONSE:', res);
-
-    // ✅ ONLY CHECK TOKEN
-    if (res?.token) {
-      await AsyncStorage.setItem('driverToken', res.token);
-await AsyncStorage.setItem('otp_mobile', mobile);
-      // 🔥 move to next step
-      navigation.navigate('VehicleDetails');
-    } else {
-      Alert.alert('Error', res?.message || 'Driver registration failed');
+  const handleDriverRegister = async () => {
+    if (!firstName || !lastName || !mobile || !emergencyMobile || !password) {
+      Alert.alert('Error', 'All fields are required');
+      return;
     }
 
-  } catch (err) {
-    console.log(err);
-    Alert.alert('Server Error', 'Unable to register driver');
-  }
-};
+    try {
+      const res = await registerDriverApi({
+        firstName,
+        lastName,
+        mobile,
+        emergencyMobile,
+        password
+      });
+
+      console.log('DRIVER REGISTER RESPONSE:', res);
+
+      // ✅ ONLY CHECK TOKEN
+      if (res?.token) {
+        await AsyncStorage.setItem('driverToken', res.token);
+        await AsyncStorage.setItem('otp_mobile', mobile);
+        // 🔥 move to next step
+        navigation.navigate('VehicleDetails');
+      } else {
+        Alert.alert('Error', res?.message || 'Driver registration failed');
+      }
+
+    } catch (err) {
+      console.log(err);
+      Alert.alert('Server Error', 'Unable to register driver');
+    }
+  };
 
 
   return (
@@ -69,11 +69,16 @@ await AsyncStorage.setItem('otp_mobile', mobile);
 
       <Text style={styles.title}>Driver Details</Text>
 
-       <AppInput placeholder="Driver's First Name" value={firstName} onChangeText={setFirstName} />
+      <AppInput placeholder="Driver's First Name" value={firstName} onChangeText={setFirstName} />
       <AppInput placeholder="Driver's Last Name" value={lastName} onChangeText={setLastName} />
       <AppInput placeholder="Driver's Mobile Number" value={mobile} onChangeText={setMobile} />
       <AppInput placeholder="Emergency Mobile Number" value={emergencyMobile} onChangeText={setEmergencyMobile} />
       <AppInput placeholder="Enter Password" secureTextEntry value={password} onChangeText={setPassword} />
+      {password.length > 0 && password.length < 6 && (
+        <Text style={{ color: 'red', fontSize: 12, marginLeft: 5, marginTop: 4 }}>
+          Password length should be more than 6 characters
+        </Text>
+      )}
 
       <AppButton title="Next" onPress={handleDriverRegister} />
 

@@ -19,72 +19,72 @@ export default function OwnerRegistration() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-// const handleOwnerRegister = async () => {
-//   console.log("NEXT BUTTON CLICKED");
-// console.log("REGISTER API PAYLOAD:", payload);
-//   if (!firstName || !lastName || !mobile || !email || !password) {
-//     Alert.alert("Error", "All fields are required");
-//     return;
-//   }
+  // const handleOwnerRegister = async () => {
+  //   console.log("NEXT BUTTON CLICKED");
+  // console.log("REGISTER API PAYLOAD:", payload);
+  //   if (!firstName || !lastName || !mobile || !email || !password) {
+  //     Alert.alert("Error", "All fields are required");
+  //     return;
+  //   }
 
-//   try {
-//     const res = await ownerRegisterApi({
-//       firstName,
-//       lastName,
-//       mobile,
-//       email,
-//       password
-//     });
+  //   try {
+  //     const res = await ownerRegisterApi({
+  //       firstName,
+  //       lastName,
+  //       mobile,
+  //       email,
+  //       password
+  //     });
 
-//     console.log("OWNER REGISTER RESPONSE:", res);
+  //     console.log("OWNER REGISTER RESPONSE:", res);
 
-//     if (res?.data?._id) {
-//       await AsyncStorage.setItem('ownerId', res.data._id);
-//       console.log("NAVIGATING TO DriverDetails");
+  //     if (res?.data?._id) {
+  //       await AsyncStorage.setItem('ownerId', res.data._id);
+  //       console.log("NAVIGATING TO DriverDetails");
 
-//       navigation.navigate('DriverDetails');
-//     } else {
-//       Alert.alert("API ERROR", JSON.stringify(res));
-//     }
+  //       navigation.navigate('DriverDetails');
+  //     } else {
+  //       Alert.alert("API ERROR", JSON.stringify(res));
+  //     }
 
-//   } catch (err) {
-//     console.log("FETCH FAILED:", err);
-//     Alert.alert("Network Error", "Cannot reach server");
-//   }
-// };
+  //   } catch (err) {
+  //     console.log("FETCH FAILED:", err);
+  //     Alert.alert("Network Error", "Cannot reach server");
+  //   }
+  // };
 
-const handleOwnerRegister = async () => {
-  console.log("NEXT BUTTON CLICKED");
+  const handleOwnerRegister = async () => {
+    console.log("NEXT BUTTON CLICKED");
 
-  const payload = {
-    firstName,
-    lastName,
-    mobile,
-    email,
-    password
-  };
+    const payload = {
+      firstName,
+      lastName,
+      mobile,
+      email,
+      password
+    };
 
-  console.log("REGISTER API PAYLOAD:", payload);
+    console.log("REGISTER API PAYLOAD:", payload);
 
-  if (!firstName || !lastName || !mobile || !email || !password) {
-    Alert.alert("Error", "All fields are required");
-    return;
-  }
-
-  try {
-    const res = await ownerRegisterApi(payload);
-
-    console.log("OWNER REGISTER RESPONSE:", res);
-
-    if (res?.data?._id) {
-      await AsyncStorage.setItem('ownerId', res.data._id);
-      navigation.navigate('DriverDetails');
+    if (!firstName || !lastName || !mobile || !email || !password) {
+      Alert.alert("Error", "All fields are required");
+      return;
     }
-  } catch (err) {
-    console.log("FETCH FAILED:", err);
-    Alert.alert("Network Error", "Cannot reach server");
-  }
-};
+
+    try {
+      const res = await ownerRegisterApi(payload);
+
+      console.log("OWNER REGISTER RESPONSE:", res);
+
+      if (res?.data?._id) {
+        await AsyncStorage.setItem('ownerId', res.data._id);
+        navigation.navigate('DriverDetails');
+      }
+    } catch (err) {
+      console.log("FETCH FAILED:", err);
+      Alert.alert("Network Error", "Cannot reach server");
+    }
+  };
 
 
   return (
@@ -108,6 +108,11 @@ const handleOwnerRegister = async () => {
       <AppInput placeholder="Enter Your Mobile Number" value={mobile} onChangeText={setMobile} />
       <AppInput placeholder="Enter Your Email" value={email} onChangeText={setEmail} />
       <AppInput placeholder="Enter Password" secureTextEntry value={password} onChangeText={setPassword} />
+      {password.length > 0 && password.length < 6 && (
+        <Text style={{ color: 'red', fontSize: 12, marginLeft: 5, marginTop: 4 }}>
+          Password length should be more than 6 characters
+        </Text>
+      )}
 
       <AppButton title="Next" onPress={handleOwnerRegister} />
 

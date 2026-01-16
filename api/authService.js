@@ -3,8 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import api from '../api/api';
 import axios from 'axios';
+const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-const GOOGLE_API_KEY = 'AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo';
+// const GOOGLE_API_KEY = 'AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo';
 const API_BASE_URL = 'http://192.168.31.89:3000/'
 
 export const loginApi = async (mobile, password) => {
@@ -35,7 +36,7 @@ export const loginApi = async (mobile, password) => {
 
 export const ownerRegisterApi = async (payload) => {
   const response = await fetch(
-    `${API_BASE_URL}owner/register`, 
+    `${API_BASE_URL}owner/register`,
     {
       method: "POST",
       headers: {
@@ -197,3 +198,83 @@ export const getDriverEarningsApi = async () => {
     }
   );
 };
+
+export const getCompletedTrips = async (page = 1, limit = 10) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+
+    const res = await axios.get(
+      `${API_BASE_URL}driver/trips/history`,
+      {
+        params: { page, limit },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return res.data;
+
+  } catch (error) {
+    // console.log('SERVICE ERROR 👉', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getDriverProfileApi = async () => {
+  const token = await AsyncStorage.getItem('token');
+
+  const res = await fetch(`${API_BASE_URL}driver/profile`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  return res.json();
+};
+
+export const updateDriverProfileApi = async (payload) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+
+    console.log('📡 UPDATE PROFILE PAYLOAD 👉', payload);
+
+    const response = await fetch(
+      `${API_BASE_URL}driver/profile/update`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+
+    console.log('✅ UPDATE PROFILE RESPONSE 👉', data);
+
+    return data;
+  } catch (error) {
+    console.log('❌ UPDATE PROFILE SERVICE ERROR 👉', error);
+    throw error;
+  }
+};
+
+export const logoutDriverApi = async () => {
+  const token = await AsyncStorage.getItem('token');
+
+  const res = await fetch(`${API_BASE_URL}driver/logout`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  await AsyncStorage.clear(); // 🔑 clear session
+  return res.json();
+};
+

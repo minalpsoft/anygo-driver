@@ -106,34 +106,34 @@ export default function DriverDashboard({ navigation }) {
     };
 
     const acceptBooking = async (req) => {
-  try {
-    console.log('🔥 ACCEPT CLICKED', req._id);
+        try {
+            console.log('🔥 ACCEPT CLICKED', req._id);
 
-    await api.post(`/driver/${req._id}/accept`);
+            await api.post(`/driver/${req._id}/accept`);
 
-    Alert.alert('Booking Accepted 🚗', 'Navigation will start now');
+            Alert.alert('Booking Accepted 🚗', 'Navigation will start now');
 
-    setTimeout(() => {
-      setRequests([]);
-      navigation.navigate('Navigation', {
-        booking: req,
-        tripStarted: false,
-      });
-    }, 300);
+            setTimeout(() => {
+                setRequests([]);
+                navigation.navigate('Navigation', {
+                    booking: req,
+                    tripStarted: false,
+                });
+            }, 300);
 
-  } catch (err) {
-    console.log('❌ ACCEPT ERROR', err.response?.data || err.message);
+        } catch (err) {
+            console.log('❌ ACCEPT ERROR', err.response?.data || err.message);
 
-    // DB already updated → continue anyway
-    navigation.navigate('Navigation', {
-      booking: req,
-      tripStarted: false,
-    });
-  }
-};
+            // DB already updated → continue anyway
+            navigation.navigate('Navigation', {
+                booking: req,
+                tripStarted: false,
+            });
+        }
+    };
 
-// shhow earnings
- const [earnings, setEarnings] = useState(null);
+    // shhow earnings
+    const [earnings, setEarnings] = useState(null);
 
     useEffect(() => {
         const loadEarnings = async () => {
@@ -148,11 +148,10 @@ export default function DriverDashboard({ navigation }) {
         loadEarnings();
     }, []);
 
-const formatDuration = (mins = 0) => {
-  if (mins < 60) return `${mins} min`;
-  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
-};
-
+    const formatDuration = (mins = 0) => {
+        if (mins < 60) return `${mins} min`;
+        return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+    };
 
     return (
         <View style={styles.container}>
@@ -172,7 +171,6 @@ const formatDuration = (mins = 0) => {
                 </Text>
             </TouchableOpacity>
 
-
             <ScrollView showsVerticalScrollIndicator={false}>
 
                 {/* TODAY EARNINGS */}
@@ -182,7 +180,6 @@ const formatDuration = (mins = 0) => {
                     trips={earnings?.tripsCount || 0}
                     hours={formatDuration(earnings?.today?.durationMin)}
                 />
-
 
                 {/* WALLET */}
                 <Card>
@@ -198,7 +195,6 @@ const formatDuration = (mins = 0) => {
 
                     <Text style={styles.linkSmall}>View Payment History &gt;&gt;</Text>
                 </Card>
-
 
                 {/* NEW REQUEST */}
                 {!ongoingTrip && (
@@ -266,8 +262,6 @@ const formatDuration = (mins = 0) => {
                     )
                 )}
 
-
-
                 {/* ONGOING TRIP */}
                 {ongoingTrip && (
                     <Card>
@@ -308,7 +302,6 @@ const formatDuration = (mins = 0) => {
                     </Card>
                 )}
 
-
                 {/* QR CODE */}
                 <View style={styles.qrCard}>
 
@@ -318,7 +311,6 @@ const formatDuration = (mins = 0) => {
                         resizeMode="contain"
                     />
                 </View>
-
 
             </ScrollView>
 
