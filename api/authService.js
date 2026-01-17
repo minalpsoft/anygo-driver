@@ -278,3 +278,84 @@ export const logoutDriverApi = async () => {
   return res.json();
 };
 
+export const getCustomerProfileApi = async () => {
+  const token = await AsyncStorage.getItem('customerToken');
+  // ⚠️ must be CUSTOMER token, not driver token
+
+  if (!token) {
+    throw new Error('Customer token not found');
+  }
+
+  return axios.get(
+    `${API_BASE_URL}customer/profile`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const getCustomerByIdForDriverApi = async (customerId) => {
+  const token = await AsyncStorage.getItem('token'); // DRIVER token
+
+  if (!customerId) throw new Error('Customer ID missing');
+
+  return axios.get(
+    `${API_BASE_URL}driver/customer/${customerId}`, // already exposed OR proxy route
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+// Request withdrawal
+export const requestWithdrawalApi = async (amount) => {
+  if (!amount || amount <= 0) {
+    throw new Error('Invalid withdrawal amount');
+  }
+
+  const token = await AsyncStorage.getItem('token'); // DRIVER token
+
+  return axios.post(
+    `${API_BASE_URL}driver/Request-withdraw`,
+    { amount },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+// Get withdrawal history
+export const getWithdrawalHistoryApi = async () => {
+  const token = await AsyncStorage.getItem('token'); // DRIVER token
+
+  return axios.get(
+    `${API_BASE_URL}driver/withdrawals-history`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const addBankDetailsApi = async (payload) => {
+  const token = await AsyncStorage.getItem('token');
+
+  const response = await fetch(`${API_BASE_URL}driver/bank-details`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+};
+
+

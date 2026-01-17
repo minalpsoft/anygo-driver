@@ -10,11 +10,15 @@ import { startTripApi } from '../api/authService';
 import { AnimatedRegion } from 'react-native-maps';
 import { completeTripApi } from '../api/authService';
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+import { getCustomerByIdForDriverApi } from '../api/authService';
+import Card from '../components/Card';
+import { Linking } from 'react-native';
 
 export default function Navigation({ route = {}, navigation }) {
   // const { booking, tripStarted } = route.params;
   const booking = route?.params?.booking;
   const tripStarted = route?.params?.tripStarted || false;
+  // const [customer, setCustomer] = useState(null);
 
   if (!booking) {
     return (
@@ -81,6 +85,18 @@ export default function Navigation({ route = {}, navigation }) {
   };
 
   const activeDestination = tripStarted ? drop : pickup;
+
+  const hasCustomerDetails = typeof booking.customerId === 'object';
+
+  const customerName = hasCustomerDetails
+    ? `${booking.customerId.firstName} ${booking.customerId.lastName}`
+    : 'Customer';
+
+  const customerMobile = hasCustomerDetails
+    ? booking.customerId.mobile
+    : null;
+
+
 
   /* LOCATION PERMISSION + LIVE TRACKING */
   useEffect(() => {
@@ -218,9 +234,54 @@ export default function Navigation({ route = {}, navigation }) {
   };
 
 
+  const handleCallCustomer = () => {
+    if (!customerMobile) {
+      Alert.alert('Info', 'Customer phone number not available');
+      return;
+    }
+
+    Linking.openURL(`tel:${customerMobile}`);
+  };
+
+
+// console.log('👤 booking.customerId =', booking.customerId);
+// console.log('👤 type =', typeof booking.customerId);
+
+
   return (
     <View style={styles.container}>
       <AppHeader title="Navigation" navigation={navigation} />
+
+      <View style={{ marginTop: 10 }}>
+        <Card>
+          <View style={styles.rowBetween}>
+            <Text style={styles.cardTitle}>
+              {customerName}
+            </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.acceptBtn,
+                !customerMobile && { backgroundColor: '#ccc' }
+              ]}
+              disabled={!customerMobile}
+              onPress={() => Linking.openURL(`tel:${customerMobile}`)}
+            >
+              <Text style={styles.link}>
+                📞 {customerMobile ? 'Call' : 'Unavailable'}
+              </Text>
+            </TouchableOpacity>
+
+          </View>
+
+          <Text style={styles.amount1}>
+            {booking.distanceKm.toFixed(1)} km
+          </Text>
+
+          <Divider />
+        </Card>
+      </View>
+
 
       <View style={styles.mapWrapper}>
         <Text style={styles.cardTitle}>Live Navigation</Text>
@@ -245,7 +306,7 @@ export default function Navigation({ route = {}, navigation }) {
             flat
           >
             <Image
-              source={require('../assets/carimg.jpg')}
+              source={require('../assets/carimg1.png')}
               style={{ width: 40, height: 40 }}
               resizeMode="contain"
             />
@@ -273,23 +334,25 @@ export default function Navigation({ route = {}, navigation }) {
 
 
           {/* ROUTE (OPTIONAL) */}
-          <MapViewDirections
-            origin={currentLocation}
-            destination={activeDestination}
-            apikey={GOOGLE_API_KEY}
-            mode="DRIVING"
-            strokeWidth={4}
-            strokeColor="#1E90FF"
-            onError={() => {
-              console.log('⚠️ Route not found – markers still visible');
-            }}
-            onReady={(result) => {
-              mapRef.current.fitToCoordinates(result.coordinates, {
-                edgePadding: { top: 80, bottom: 80, left: 40, right: 40 },
-                animated: true,
-              });
-            }}
-          />
+          {GOOGLE_API_KEY && currentLocation && activeDestination && (
+            <MapViewDirections
+              origin={currentLocation}
+              destination={activeDestination}
+              apikey={GOOGLE_API_KEY}
+              mode="DRIVING"
+              strokeWidth={4}
+              strokeColor="#1E90FF"
+              onError={() => {
+                console.log('⚠️ Route not found – markers still visible');
+              }}
+              onReady={(result) => {
+                mapRef.current.fitToCoordinates(result.coordinates, {
+                  edgePadding: { top: 80, bottom: 80, left: 40, right: 40 },
+                  animated: true,
+                });
+              }}
+            />
+          )}
         </MapView>
 
         {arrivedAtPickup && !tripStarted && (

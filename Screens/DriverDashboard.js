@@ -18,6 +18,18 @@ export default function DriverDashboard({ navigation }) {
     const [ongoingTrip, setOngoingTrip] = useState(null);
     const [isOnline, setIsOnline] = useState(false);
 
+    const isToday = (dateStr) => {
+        const d = new Date(dateStr);
+
+        const now = new Date();
+
+        return (
+            d.getDate() === now.getDate() &&
+            d.getMonth() === now.getMonth() &&
+            d.getFullYear() === now.getFullYear()
+        );
+    };
+
     useEffect(() => {
         initDriver();
     }, []);
@@ -111,7 +123,7 @@ export default function DriverDashboard({ navigation }) {
 
             await api.post(`/driver/${req._id}/accept`);
 
-            Alert.alert('Booking Accepted 🚗', 'Navigation will start now');
+            Alert.alert('Booking Accepted', 'Navigation will start now');
 
             setTimeout(() => {
                 setRequests([]);
@@ -135,18 +147,58 @@ export default function DriverDashboard({ navigation }) {
     // shhow earnings
     const [earnings, setEarnings] = useState(null);
 
-    useEffect(() => {
-        const loadEarnings = async () => {
-            try {
-                const res = await getDriverEarningsApi();
-                setEarnings(res.data);
-            } catch (err) {
-                console.log('❌ EARNINGS ERROR', err?.response?.data || err.message);
-            }
-        };
+    // useEffect(() => {
+    //     const loadEarnings = async () => {
+    //         try {
+    //             const res = await getDriverEarningsApi();
+    //             setEarnings(res.data);
+    //         } catch (err) {
+    //             console.log('❌ EARNINGS ERROR', err?.response?.data || err.message);
+    //         }
+    //     };
 
-        loadEarnings();
-    }, []);
+    //     loadEarnings();
+    // }, []);
+
+    const [todayStats, setTodayStats] = useState({
+        earnings: 0,
+        trips: 0,
+        durationMin: 0,
+    });
+
+    useEffect(() => {
+  const loadTodayStats = async () => {
+    try {
+      const res = await getDriverEarningsApi();
+
+      console.log('📦 RAW EARNINGS API:', res.data);
+
+      const today = res.data?.today;
+
+      if (!today) {
+        setTodayStats({
+          earnings: 0,
+          trips: 0,
+          durationMin: 0,
+        });
+        return;
+      }
+
+      setTodayStats({
+        earnings: today.earnings || 0,
+        trips: today.trips || 0,
+        durationMin: today.durationMin || 0,
+      });
+
+    } catch (err) {
+      console.log('❌ TODAY STATS ERROR', err?.response?.data || err.message);
+    }
+  };
+
+  loadTodayStats();
+}, []);
+
+
 
     const formatDuration = (mins = 0) => {
         if (mins < 60) return `${mins} min`;
@@ -174,12 +226,21 @@ export default function DriverDashboard({ navigation }) {
             <ScrollView showsVerticalScrollIndicator={false}>
 
                 {/* TODAY EARNINGS */}
-                <TodayCard
+                {/* <TodayCard
                     title="Today"
                     amount={earnings?.totalEarnings || 0}
                     trips={earnings?.tripsCount || 0}
                     hours={formatDuration(earnings?.today?.durationMin)}
+                /> */}
+
+                <TodayCard
+                    title="Today"
+                    amount={todayStats.earnings}
+                    trips={todayStats.trips}
+                    hours={formatDuration(todayStats.durationMin)}
                 />
+
+
 
                 {/* WALLET */}
                 <Card>

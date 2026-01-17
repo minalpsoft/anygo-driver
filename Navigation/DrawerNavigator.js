@@ -33,7 +33,7 @@ return (
     <Drawer.Screen name="Dashboard" component={DriverDashboard} />
     <Drawer.Screen name="Earnings" component={Earnings} />
     <Drawer.Screen name="Withdrawal" component={Withdrawal} />
-    <Drawer.Screen name="Trip Details" component={TripDetails} />
+    {/* <Drawer.Screen name="Trip Details" component={TripDetails} /> */}
     {/* <Drawer.Screen name="OnGoing Trip Details" component={OnGoingTripDetails} /> */}
     <Drawer.Screen name="History" component={History} />
     <Drawer.Screen name="Navigation" component={Navigation} />
