@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import AppHeader from '../components/AppHeader';
 import Card from '../components/Card';
@@ -7,10 +8,11 @@ import AppButton from '../components/AppButton';
 import TodayCard from '../components/TodayCard';
 import Divider from '../components/Divider';
 import { getDriverEarningsApi, requestWithdrawalApi, getWithdrawalHistoryApi } from '../api/authService';
-import { useState, useEffect } from 'react';
 import { COLORS } from '../theme/colors';
 import { Modal } from 'react-native';
 import { addBankDetailsApi } from '../api/authService';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Withdrawal({ navigation }) {
 
@@ -27,24 +29,44 @@ export default function Withdrawal({ navigation }) {
         ifscCode: '',
     });
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
     const loadData = async () => {
         try {
             const [earnRes, historyRes] = await Promise.all([
                 getDriverEarningsApi(),
                 getWithdrawalHistoryApi(),
             ]);
-
+            // console.log('EARNINGS API RESPONSE 👉', earnRes.data);
             setEarnings(earnRes.data);
             setHistory(historyRes.data || []);
+
+            // ✅ PREFILL BANK DETAILS FROM DB
+            if (earnRes.data?.bankDetails) {
+                setHasBankDetails(true);
+
+                setBankForm({
+                    bankName: earnRes.data.bankDetails.bankName || '',
+                    accountHolderName: earnRes.data.bankDetails.accountHolderName || '',
+                    bankAccountNumber: earnRes.data.bankDetails.bankAccountNumber || '',
+                    ifscCode: earnRes.data.bankDetails.ifscCode || '',
+                });
+
+                // optional cache
+                await AsyncStorage.setItem(
+                    'bankDetails',
+                    JSON.stringify(earnRes.data.bankDetails)
+                );
+            }
+
         } catch (err) {
             console.log('❌ LOAD ERROR', err?.response?.data || err.message);
         }
     };
 
+    useFocusEffect(
+        useCallback(() => {
+            loadData();
+        }, [])
+    );
 
     const submitWithdrawal = async () => {
         if (!hasBankDetails) {
@@ -94,24 +116,21 @@ export default function Withdrawal({ navigation }) {
                         onChangeText={setAmount}
                     />
 
-                    <Text style={styles.helperText}>
-                        Bank details required before withdrawal
-                    </Text>
 
-                    {!hasBankDetails && (
-                        <View style={styles.bankWarning}>
-                            <Text style={styles.helperText}>
-                                Bank details required before withdrawal
-                            </Text>
+                    <View style={styles.bankWarning}>
+                        <Text style={styles.helperText}>
+                            {hasBankDetails
+                                ? '✅ Bank details are already added'
+                                : '⚠️ Bank details required before withdrawal'}
+                        </Text>
 
+                        {!hasBankDetails && (
                             <AppButton
                                 title="Add Bank Details"
                                 onPress={() => setShowBankModal(true)}
                             />
-                        </View>
-                    )}
-
-
+                        )}
+                    </View>
 
                     <AppButton title="Submit" onPress={submitWithdrawal} />
                 </View>
@@ -132,9 +151,14 @@ export default function Withdrawal({ navigation }) {
                                     {new Date(w.requestedAt).toLocaleDateString()}
                                 </Text>
 
-                                <Text>
+                                <Text style={{
+                                    color:
+                                        w.status === 'PENDING' ? 'orange' :
+                                            w.status === 'APPROVED' ? 'green' : 'red'
+                                }}>
                                     ₹{w.amount} • {w.status}
                                 </Text>
+
                             </View>
                         ))
                     )}
@@ -182,6 +206,11 @@ export default function Withdrawal({ navigation }) {
                                 try {
                                     await addBankDetailsApi(bankForm);
                                     Alert.alert('Success', 'Bank details added');
+                                    await AsyncStorage.setItem(
+                                        'bankDetails',
+                                        JSON.stringify(bankForm)
+                                    );
+                                    setHasBankDetails(true);
                                     setShowBankModal(false);
                                     loadData();
                                 } catch (err) {

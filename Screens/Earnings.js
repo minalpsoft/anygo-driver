@@ -6,25 +6,29 @@ import Card from '../components/Card';
 import BottomTabs from '../components/BottomTabs';
 import TodayCard from '../components/TodayCard';
 import Divider from '../components/Divider';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getDriverEarningsApi } from '../api/authService';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Earnings({ navigation }) {
 
     const [earnings, setEarnings] = useState(null);
 
-    useEffect(() => {
-        const loadEarnings = async () => {
-            try {
-                const res = await getDriverEarningsApi();
-                setEarnings(res.data);
-            } catch (err) {
-                console.log('❌ EARNINGS ERROR', err?.response?.data || err.message);
-            }
-        };
+    const loadEarnings = async () => {
+        try {
+            const res = await getDriverEarningsApi();
+            setEarnings(res.data);
+        } catch (err) {
+            console.log('❌ EARNINGS ERROR', err?.response?.data || err.message);
+        }
+    };
 
-        loadEarnings();
-    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadEarnings();
+        }, [])
+    );
 
     return (
         <View style={styles.container}>
@@ -48,12 +52,18 @@ export default function Earnings({ navigation }) {
                 <Card>
                     <View style={styles.rowBetween}>
                         <Text style={styles.cardTitle}>Wallet Balance</Text>
-                        <View style={styles.divider} />
 
-                        <TouchableOpacity style={styles.acceptBtn}>
-                            <Text style={styles.link}>Withdrawal</Text>
+                        <TouchableOpacity
+                            style={styles.acceptBtn}
+                            onPress={() => navigation.navigate('Withdrawal')}
+                        >
+                            <Text style={styles.link}>Withdraw</Text>
                         </TouchableOpacity>
                     </View>
+
+                    <Text style={styles.amount1}>
+                        ₹ {earnings?.balance || 0}
+                    </Text>
 
                     <Divider />
 
@@ -67,10 +77,8 @@ export default function Earnings({ navigation }) {
                             </Text>
                         </View>
                     ))}
-
-
-
                 </Card>
+
 
                 {/* withdrawal history */}
                 <Card>
@@ -80,7 +88,10 @@ export default function Earnings({ navigation }) {
                             <Text style={styles.subTitle}>Last 10 withdrawal</Text>
                         </View>
 
-                        <TouchableOpacity style={styles.acceptBtn}>
+                       <TouchableOpacity
+                            style={styles.acceptBtn}
+                            onPress={() => navigation.navigate('Withdrawal')}
+                        >
                             <Text style={styles.link}>View All</Text>
                         </TouchableOpacity>
                     </View>
@@ -93,9 +104,22 @@ export default function Earnings({ navigation }) {
                                 <Text style={styles.amount1}>
                                     {new Date(item.requestedAt).toDateString()}
                                 </Text>
-                                <Text style={styles.amount1}>
+                                <Text
+                                    style={[
+                                        styles.amount1,
+                                        {
+                                            color:
+                                                item.status === 'PENDING'
+                                                    ? 'orange'
+                                                    : item.status === 'APPROVED'
+                                                        ? 'green'
+                                                        : 'red',
+                                        },
+                                    ]}
+                                >
                                     ₹ {item.amount}
                                 </Text>
+
                             </View>
                         ))
                     ) : (

@@ -6,17 +6,37 @@ import Card from '../components/Card';
 import BottomTabs from '../components/BottomTabs';
 import TodayCard from '../components/TodayCard';
 import Divider from '../components/Divider';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { updateDriverLocation } from '../api/authService';
 import api from '../api/api';
 import { getAddressFromLatLng } from '../api/authService';
 import { getDriverEarningsApi } from '../api/authService';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function DriverDashboard({ navigation }) {
 
     const [requests, setRequests] = useState([]);
     const [ongoingTrip, setOngoingTrip] = useState(null);
     const [isOnline, setIsOnline] = useState(false);
+    const [walletBalance, setWalletBalance] = useState(0);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadWallet();
+        }, [])
+    );
+
+    const loadWallet = async () => {
+        try {
+            const res = await getDriverEarningsApi();
+
+            // console.log('DASHBOARD WALLET API 👉', res.data);
+
+            setWalletBalance(res.data.balance || 0);
+        } catch (err) {
+            console.log('Wallet load error', err.message);
+        }
+    };
 
     const isToday = (dateStr) => {
         const d = new Date(dateStr);
@@ -167,36 +187,36 @@ export default function DriverDashboard({ navigation }) {
     });
 
     useEffect(() => {
-  const loadTodayStats = async () => {
-    try {
-      const res = await getDriverEarningsApi();
+        const loadTodayStats = async () => {
+            try {
+                const res = await getDriverEarningsApi();
 
-      console.log('📦 RAW EARNINGS API:', res.data);
+                //   console.log('📦 RAW EARNINGS API:', res.data);
 
-      const today = res.data?.today;
+                const today = res.data?.today;
 
-      if (!today) {
-        setTodayStats({
-          earnings: 0,
-          trips: 0,
-          durationMin: 0,
-        });
-        return;
-      }
+                if (!today) {
+                    setTodayStats({
+                        earnings: 0,
+                        trips: 0,
+                        durationMin: 0,
+                    });
+                    return;
+                }
 
-      setTodayStats({
-        earnings: today.earnings || 0,
-        trips: today.trips || 0,
-        durationMin: today.durationMin || 0,
-      });
+                setTodayStats({
+                    earnings: today.earnings || 0,
+                    trips: today.trips || 0,
+                    durationMin: today.durationMin || 0,
+                });
 
-    } catch (err) {
-      console.log('❌ TODAY STATS ERROR', err?.response?.data || err.message);
-    }
-  };
+            } catch (err) {
+                console.log('❌ TODAY STATS ERROR', err?.response?.data || err.message);
+            }
+        };
 
-  loadTodayStats();
-}, []);
+        loadTodayStats();
+    }, []);
 
 
 
@@ -225,14 +245,6 @@ export default function DriverDashboard({ navigation }) {
 
             <ScrollView showsVerticalScrollIndicator={false}>
 
-                {/* TODAY EARNINGS */}
-                {/* <TodayCard
-                    title="Today"
-                    amount={earnings?.totalEarnings || 0}
-                    trips={earnings?.tripsCount || 0}
-                    hours={formatDuration(earnings?.today?.durationMin)}
-                /> */}
-
                 <TodayCard
                     title="Today"
                     amount={todayStats.earnings}
@@ -246,15 +258,22 @@ export default function DriverDashboard({ navigation }) {
                 <Card>
                     <View style={styles.rowBetween}>
                         <Text style={styles.cardTitle}>Wallet Balance</Text>
-                        <TouchableOpacity style={styles.acceptBtn}>
+                        <TouchableOpacity
+                            style={styles.acceptBtn}
+                            onPress={() => navigation.navigate('Withdrawal')}
+                        >
                             <Text style={styles.link}>Withdraw</Text>
                         </TouchableOpacity>
+
                     </View>
-                    <Text style={styles.amount1}>Rs. 4350.00</Text>
+                    <Text style={styles.amount1}>
+                        ₹ {walletBalance.toFixed(2)}
+                    </Text>
+
 
                     <Divider />
 
-                    <Text style={styles.linkSmall}>View Payment History &gt;&gt;</Text>
+                    <Text style={styles.linkSmall} onPress={() => navigation.navigate('Withdrawal')}>View Payment History &gt;&gt;</Text>
                 </Card>
 
                 {/* NEW REQUEST */}
