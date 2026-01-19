@@ -35,11 +35,11 @@ export default function Withdrawal({ navigation }) {
                 getDriverEarningsApi(),
                 getWithdrawalHistoryApi(),
             ]);
-            // console.log('EARNINGS API RESPONSE 👉', earnRes.data);
+            console.log('EARNINGS RESPONSE 👉', JSON.stringify(earnRes.data, null, 2));
+
             setEarnings(earnRes.data);
             setHistory(historyRes.data || []);
 
-            // ✅ PREFILL BANK DETAILS FROM DB
             if (earnRes.data?.bankDetails) {
                 setHasBankDetails(true);
 
@@ -49,18 +49,13 @@ export default function Withdrawal({ navigation }) {
                     bankAccountNumber: earnRes.data.bankDetails.bankAccountNumber || '',
                     ifscCode: earnRes.data.bankDetails.ifscCode || '',
                 });
-
-                // optional cache
-                await AsyncStorage.setItem(
-                    'bankDetails',
-                    JSON.stringify(earnRes.data.bankDetails)
-                );
-            }
+            } 
 
         } catch (err) {
-            console.log('❌ LOAD ERROR', err?.response?.data || err.message);
+            console.log(err);
         }
     };
+
 
     useFocusEffect(
         useCallback(() => {
@@ -69,7 +64,7 @@ export default function Withdrawal({ navigation }) {
     );
 
     const submitWithdrawal = async () => {
-        if (!hasBankDetails) {
+        if (!bankForm.bankAccountNumber) {
             Alert.alert('Error', 'Please add bank details first');
             return;
         }
@@ -124,13 +119,12 @@ export default function Withdrawal({ navigation }) {
                                 : '⚠️ Bank details required before withdrawal'}
                         </Text>
 
-                        {!hasBankDetails && (
-                            <AppButton
-                                title="Add Bank Details"
-                                onPress={() => setShowBankModal(true)}
-                            />
-                        )}
+                        <AppButton
+                            title={hasBankDetails ? 'Edit Bank Details' : 'Add Bank Details'}
+                            onPress={() => setShowBankModal(true)}
+                        />
                     </View>
+
 
                     <AppButton title="Submit" onPress={submitWithdrawal} />
                 </View>
