@@ -86,17 +86,8 @@ export default function Navigation({ route = {}, navigation }) {
 
   const activeDestination = tripStarted ? drop : pickup;
 
-  const hasCustomerDetails = typeof booking.customerId === 'object';
-
-  const customerName = hasCustomerDetails
-    ? `${booking.customerId.firstName} ${booking.customerId.lastName}`
-    : 'Customer';
-
-  const customerMobile = hasCustomerDetails
-    ? booking.customerId.mobile
-    : null;
-
-
+//   const customerName = booking.customerName || 'Customer';
+// const customerMobile = booking.customerMobile || null;
 
   /* LOCATION PERMISSION + LIVE TRACKING */
   useEffect(() => {
@@ -256,7 +247,7 @@ export default function Navigation({ route = {}, navigation }) {
         <Card>
           <View style={styles.rowBetween}>
             <Text style={styles.cardTitle}>
-              {customerName}
+              {booking.customerName}
             </Text>
 
             <TouchableOpacity
@@ -268,7 +259,7 @@ export default function Navigation({ route = {}, navigation }) {
               onPress={() => Linking.openURL(`tel:${customerMobile}`)}
             >
               <Text style={styles.link}>
-                📞 {customerMobile ? 'Call' : 'Unavailable'}
+                📞 {booking.customerMobile ? 'Call' : 'Unavailable'}
               </Text>
             </TouchableOpacity>
 
