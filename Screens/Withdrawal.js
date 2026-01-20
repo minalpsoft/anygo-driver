@@ -13,6 +13,7 @@ import { Modal } from 'react-native';
 import { addBankDetailsApi } from '../api/authService';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getDriverDashboardApi } from '../api/authService';
 
 export default function Withdrawal({ navigation }) {
 
@@ -34,8 +35,9 @@ export default function Withdrawal({ navigation }) {
             const [earnRes, historyRes] = await Promise.all([
                 getDriverEarningsApi(),
                 getWithdrawalHistoryApi(),
+                getDriverDashboardApi(),
             ]);
-            console.log('EARNINGS RESPONSE 👉', JSON.stringify(earnRes.data, null, 2));
+            // console.log('EARNINGS RESPONSE 👉', JSON.stringify(earnRes.data, null, 2));
 
             setEarnings(earnRes.data);
             setHistory(historyRes.data || []);
@@ -86,7 +88,6 @@ export default function Withdrawal({ navigation }) {
             );
         }
     };
-
 
     return (
         <View style={styles.container}>
@@ -200,10 +201,10 @@ export default function Withdrawal({ navigation }) {
                                 try {
                                     await addBankDetailsApi(bankForm);
                                     Alert.alert('Success', 'Bank details added');
-                                    await AsyncStorage.setItem(
-                                        'bankDetails',
-                                        JSON.stringify(bankForm)
-                                    );
+                                    // await AsyncStorage.setItem(
+                                    //     'bankDetails',
+                                    //     JSON.stringify(bankForm)
+                                    // );
                                     setHasBankDetails(true);
                                     setShowBankModal(false);
                                     loadData();

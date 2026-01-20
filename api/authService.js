@@ -358,4 +358,14 @@ export const addBankDetailsApi = async (payload) => {
 
 };
 
-
+export const getDriverDashboardApi = async () => {
+   const token = await AsyncStorage.getItem('token');
+  return axios.get(
+    `${API_BASE_URL}driver/driver-dashboard`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};

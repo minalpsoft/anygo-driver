@@ -13,6 +13,8 @@ const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 import { getCustomerByIdForDriverApi } from '../api/authService';
 import Card from '../components/Card';
 import { Linking } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import BottomTabs from '../components/BottomTabs';
 
 export default function Navigation({ route = {}, navigation }) {
   // const { booking, tripStarted } = route.params;
@@ -86,8 +88,8 @@ export default function Navigation({ route = {}, navigation }) {
 
   const activeDestination = tripStarted ? drop : pickup;
 
-//   const customerName = booking.customerName || 'Customer';
-// const customerMobile = booking.customerMobile || null;
+  const customerName = booking?.customerName || 'Customer';
+  const customerMobile = booking?.customerMobile || null;
 
   /* LOCATION PERMISSION + LIVE TRACKING */
   useEffect(() => {
@@ -235,33 +237,50 @@ export default function Navigation({ route = {}, navigation }) {
   };
 
 
-// console.log('👤 booking.customerId =', booking.customerId);
-// console.log('👤 type =', typeof booking.customerId);
+  // console.log('👤 booking.customerId =', booking.customerId);
+  // console.log('👤 type =', typeof booking.customerId);
 
 
   return (
     <View style={styles.container}>
       <AppHeader title="Navigation" navigation={navigation} />
 
-      <View style={{ marginTop: 10 }}>
+      <View style={{ marginTop: 20 }}>
         <Card>
           <View style={styles.rowBetween}>
-            <Text style={styles.cardTitle}>
-              {booking.customerName}
-            </Text>
-
-            <TouchableOpacity
-              style={[
-                styles.acceptBtn,
-                !customerMobile && { backgroundColor: '#ccc' }
-              ]}
-              disabled={!customerMobile}
-              onPress={() => Linking.openURL(`tel:${customerMobile}`)}
-            >
-              <Text style={styles.link}>
-                📞 {booking.customerMobile ? 'Call' : 'Unavailable'}
+            <View style={styles.customerRow}>
+              <Text
+                style={styles.customerName}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {booking.customerName || 'Customer'}
               </Text>
-            </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.callBtn,
+                  !customerMobile && styles.callBtnDisabled,
+                ]}
+                disabled={!customerMobile}
+                onPress={() => Linking.openURL(`tel:${customerMobile}`)}
+              >
+                <Ionicons
+                  name="call"
+                  size={18}
+                  color={customerMobile ? '#fff' : '#999'}
+                />
+                <Text
+                  style={[
+                    styles.callText,
+                    !customerMobile && { color: '#999' },
+                  ]}
+                >
+                  Call
+                </Text>
+              </TouchableOpacity>
+            </View>
+
 
           </View>
 
@@ -269,7 +288,6 @@ export default function Navigation({ route = {}, navigation }) {
             {booking.distanceKm.toFixed(1)} km
           </Text>
 
-          <Divider />
         </Card>
       </View>
 
@@ -376,6 +394,8 @@ export default function Navigation({ route = {}, navigation }) {
         )}
 
       </View>
+
+      <BottomTabs />
     </View>
   );
 }
@@ -386,6 +406,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  acceptBtn: {
+    backgroundColor: 'rgba(227,30,36,0.1)',
+    paddingHorizontal: 18,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  customerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  customerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    flex: 1,
+    marginRight: 12,
+  },
+
+  callBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+
+  callBtnDisabled: {
+    backgroundColor: '#e0e0e0',
+  },
+
+  callText: {
+    marginLeft: 6,
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
   cardTitle: {
     fontWeight: 'bold',
     fontSize: 15,

@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { updateDriverLocation } from '../api/authService';
 import api from '../api/api';
 import { getAddressFromLatLng } from '../api/authService';
-import { getDriverEarningsApi } from '../api/authService';
+import { getDriverEarningsApi, getDriverDashboardApi } from '../api/authService';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function DriverDashboard({ navigation }) {
@@ -19,6 +19,7 @@ export default function DriverDashboard({ navigation }) {
     const [ongoingTrip, setOngoingTrip] = useState(null);
     const [isOnline, setIsOnline] = useState(false);
     const [walletBalance, setWalletBalance] = useState(0);
+    const [isDocumentVerified, setIsDocumentVerified] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -50,9 +51,6 @@ export default function DriverDashboard({ navigation }) {
         );
     };
 
-    useEffect(() => {
-        initDriver();
-    }, []);
 
     const initDriver = async () => {
         try {
@@ -64,9 +62,32 @@ export default function DriverDashboard({ navigation }) {
         }
     };
 
+    // const loadDashboard = async () => {
+    //     const res = await api.get('/drivers/dashboard');
+    //     console.log('Dashboard API OK');
+    // };
+
     const loadDashboard = async () => {
-        const res = await api.get('/drivers/dashboard');
-        console.log('Dashboard API OK');
+        try {
+            const res = await getDriverDashboardApi();
+
+            // console.log('🟡 DASHBOARD RESPONSE 👉', res.data);
+
+            // 👇 VERY IMPORTANT
+            const driver = res.data.driver || res.data;
+
+            setIsDocumentVerified(driver?.documents?.verified === true);
+            setIsOnline(driver?.isOnline === true);
+
+            console.log(
+                '🟢 DOCUMENT VERIFIED 👉',
+                driver?.documents?.verified,
+                ' @ ',
+                new Date().toISOString()
+            );
+        } catch (err) {
+            console.log('❌ DASHBOARD ERROR 👉', err.response?.data || err.message);
+        }
     };
 
     const fetchRequests = async () => {
@@ -78,6 +99,25 @@ export default function DriverDashboard({ navigation }) {
             console.log('❌ FETCH ERROR 👉', e.response?.data || e.message);
         }
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
+
+            const run = async () => {
+                if (!isActive) return;
+                await loadDashboard();
+                await fetchRequests();
+            };
+
+            run();
+
+            return () => {
+                isActive = false;
+            };
+        }, [])
+    );
+
 
     useEffect(() => {
         if (!requests.length) return;
@@ -113,6 +153,15 @@ export default function DriverDashboard({ navigation }) {
 
     const toggleOnline = async () => {
         try {
+            if (isDocumentVerified !== true) {
+                Alert.alert(
+                    'Verification Pending',
+                    'Your documents are not verified yet. Please wait for admin approval.'
+                );
+                return;
+            }
+
+
             if (!isOnline) {
                 await updateDriverLocation();
             }
