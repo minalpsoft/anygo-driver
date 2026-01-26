@@ -12,6 +12,7 @@ import api from '../api/api';
 import { getAddressFromLatLng } from '../api/authService';
 import { getDriverEarningsApi, getDriverDashboardApi } from '../api/authService';
 import { useFocusEffect } from '@react-navigation/native';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function DriverDashboard({ navigation }) {
 
@@ -20,6 +21,35 @@ export default function DriverDashboard({ navigation }) {
     const [isOnline, setIsOnline] = useState(false);
     const [walletBalance, setWalletBalance] = useState(0);
     const [isDocumentVerified, setIsDocumentVerified] = useState(false);
+
+    
+    useFocusEffect(
+        useCallback(() => {
+            updateDriverLocation(); // 📍 update GPS whenever dashboard opens
+        }, [])
+    );
+
+
+    useEffect(() => {
+        if (!isOnline) return;
+
+        let isMounted = true;
+
+        const poll = async () => {
+            if (!isMounted) return;
+            await fetchRequests();
+        };
+
+        poll(); // 🔥 immediate first fetch
+
+        const interval = setInterval(poll, 3000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
+    }, [isOnline]);
+
 
     useFocusEffect(
         useCallback(() => {
@@ -62,11 +92,6 @@ export default function DriverDashboard({ navigation }) {
         }
     };
 
-    // const loadDashboard = async () => {
-    //     const res = await api.get('/drivers/dashboard');
-    //     console.log('Dashboard API OK');
-    // };
-
     const loadDashboard = async () => {
         try {
             const res = await getDriverDashboardApi();
@@ -93,8 +118,18 @@ export default function DriverDashboard({ navigation }) {
     const fetchRequests = async () => {
         try {
             const res = await api.get('/driver/booking-requests');
-            console.log('🟢 BOOKINGS 👉', res.data);
-            setRequests(res.data);
+
+            if (!res.data || res.data.length === 0) {
+                return;
+            }
+
+            setRequests(prev => {
+                if (JSON.stringify(prev) === JSON.stringify(res.data)) {
+                    return prev; // no unnecessary re-render
+                }
+                return res.data;
+            });
+
         } catch (e) {
             console.log('❌ FETCH ERROR 👉', e.response?.data || e.message);
         }
@@ -118,23 +153,61 @@ export default function DriverDashboard({ navigation }) {
         }, [])
     );
 
+    const resolveLatLng = (location) => {
+        if (!location) return null;
+
+        // GeoJSON format
+        if (Array.isArray(location.coordinates)) {
+            return {
+                lat: Number(location.coordinates[0]),
+                lng: Number(location.coordinates[1]),
+            };
+        }
+
+        // Plain object format
+        if (
+            location.lat !== undefined &&
+            location.lng !== undefined
+        ) {
+            return {
+                lat: Number(location.lat),
+                lng: Number(location.lng),
+            };
+        }
+
+        return null;
+    };
+
 
     useEffect(() => {
         if (!requests.length) return;
 
         const loadAddresses = async () => {
-            console.log('📍 Resolving addresses...');
-
             const updated = await Promise.all(
-                requests.map(async req => {
-                    const pickupAddress = await getAddressFromLatLng(
-                        req.pickupLocation.lat,
-                        req.pickupLocation.lng
-                    );
+                requests.map(async (req) => {
 
+                    if (req.pickupAddress && req.dropAddress) {
+                        return req;
+                    }
+
+                    const pickup = resolveLatLng(req.pickupLocation);
+                    const drop = resolveLatLng(req.dropLocation);
+
+                    if (!pickup || !drop) {
+                        return {
+                            ...req,
+                            pickupAddress: 'Location not available',
+                            dropAddress: 'Location not available',
+                        };
+                    }
+
+                    const pickupAddress = await getAddressFromLatLng(
+                        pickup.lat,
+                        pickup.lng
+                    );
                     const dropAddress = await getAddressFromLatLng(
-                        req.dropLocation.lat,
-                        req.dropLocation.lng
+                        drop.lat,
+                        drop.lng
                     );
 
                     return {
@@ -149,7 +222,8 @@ export default function DriverDashboard({ navigation }) {
         };
 
         loadAddresses();
-    }, [requests.length]);
+    }, [requests]);
+
 
     const toggleOnline = async () => {
         try {
@@ -188,24 +262,17 @@ export default function DriverDashboard({ navigation }) {
 
     const acceptBooking = async (req) => {
         try {
-            console.log('🔥 ACCEPT CLICKED', req._id);
-
             await api.post(`/driver/${req._id}/accept`);
 
-            Alert.alert('Booking Accepted', 'Navigation will start now');
+            setIsOnline(false); // 🛑 stop polling
+            setRequests([]);
 
-            setTimeout(() => {
-                setRequests([]);
-                navigation.navigate('Navigation', {
-                    booking: req,
-                    tripStarted: false,
-                });
-            }, 300);
+            navigation.navigate('Navigation', {
+                booking: req,
+                tripStarted: false,
+            });
 
         } catch (err) {
-            console.log('❌ ACCEPT ERROR', err.response?.data || err.message);
-
-            // DB already updated → continue anyway
             navigation.navigate('Navigation', {
                 booking: req,
                 tripStarted: false,
@@ -213,7 +280,7 @@ export default function DriverDashboard({ navigation }) {
         }
     };
 
-    // shhow earnings
+
     const [earnings, setEarnings] = useState(null);
 
     // useEffect(() => {

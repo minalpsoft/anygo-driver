@@ -19,7 +19,9 @@ import BottomTabs from '../components/BottomTabs';
 export default function Navigation({ route = {}, navigation }) {
   // const { booking, tripStarted } = route.params;
   const booking = route?.params?.booking;
-  const tripStarted = route?.params?.tripStarted || false;
+const [tripStarted, setTripStarted] = useState(
+  route?.params?.tripStarted || false
+);
   // const [customer, setCustomer] = useState(null);
 
   if (!booking) {
@@ -191,40 +193,92 @@ export default function Navigation({ route = {}, navigation }) {
   console.log('📦 PICKUP', pickup);
   console.log('📦 DROP', drop);
 
+  // const handleStartTrip = async () => {
+  //   try {
+  //     console.log('🚀 STARTING TRIP', booking._id);
+
+  //     const res = await startTripApi(booking._id);
+
+  //     Alert.alert('Success', 'Trip started');
+
+  //     navigation.replace('Navigation', {
+  //       booking,
+  //       tripStarted: true,
+  //     });
+
+  //   } catch (err) {
+  //     console.log('❌ START TRIP ERROR', err?.response?.data || err.message);
+  //     Alert.alert('Error', 'Unable to start trip');
+  //   }
+  // };
+
   const handleStartTrip = async () => {
-    try {
-      console.log('🚀 STARTING TRIP', booking._id);
+  console.log('🚀 STARTING TRIP (DUMMY)', booking._id);
 
-      const res = await startTripApi(booking._id);
+  // ❌ Ignore backend for now
+  try {
+    await startTripApi(booking._id);
+  } catch (err) {
+    console.log(
+      '⚠️ START TRIP API FAILED (ignored)',
+      err?.response?.data || err.message
+    );
+  }
 
-      Alert.alert('Success', 'Trip started');
+  // ✅ FRONTEND ONLY STATE CHANGE
+  setTripStarted(true);
 
-      navigation.replace('Navigation', {
-        booking,
-        tripStarted: true,
-      });
+  Alert.alert('Trip Started', 'Navigation switched to drop location');
+};
 
-    } catch (err) {
-      console.log('❌ START TRIP ERROR', err?.response?.data || err.message);
-      Alert.alert('Error', 'Unable to start trip');
+
+  // const handleEndTrip = async () => {
+  //   try {
+  //     const res = await completeTripApi(booking._id);
+
+  //     Alert.alert(
+  //       'Trip Completed',
+  //       `Fare: ₹${res.data.fare.finalFare}`
+  //     );
+
+  //     navigation.replace('DriverDashboard');
+  //   } catch (err) {
+  //     console.log('❌ END TRIP ERROR', err?.response?.data || err.message);
+  //     Alert.alert('Error', 'Unable to complete trip');
+  //   }
+  // };
+
+const handleEndTrip = async () => {
+  let finalFare = booking?.finalFare || Math.round(booking.distanceKm * 12); // 👈 dummy fare
+
+  try {
+    const res = await completeTripApi(booking._id);
+
+    // ✅ If backend responds, use real fare
+    if (res?.data?.fare?.finalFare) {
+      finalFare = res.data.fare.finalFare;
     }
-  };
 
-  const handleEndTrip = async () => {
-    try {
-      const res = await completeTripApi(booking._id);
+  } catch (err) {
+    // ❌ Ignore backend error
+    console.log(
+      '⚠️ END TRIP API FAILED (ignored)',
+      err?.response?.data || err.message
+    );
+  }
 
-      Alert.alert(
-        'Trip Completed',
-        `Fare: ₹${res.data.fare.finalFare}`
-      );
-
-      navigation.replace('DriverDashboard');
-    } catch (err) {
-      console.log('❌ END TRIP ERROR', err?.response?.data || err.message);
-      Alert.alert('Error', 'Unable to complete trip');
-    }
-  };
+  // ✅ ALWAYS show fare & navigate
+  Alert.alert(
+    'Trip Completed',
+    `Fare: ₹${finalFare}`,
+    [
+      {
+        text: 'OK',
+        onPress: () => navigation.replace('DriverDashboard'),
+      },
+    ]
+  );
+};
 
 
   const handleCallCustomer = () => {
@@ -380,7 +434,7 @@ export default function Navigation({ route = {}, navigation }) {
           </View>
         )}
 
-        {tripStarted && arrivedAtDrop && (
+        {/* {tripStarted && arrivedAtDrop && (
           <View style={styles.actionBox}>
             <TouchableOpacity
               style={[styles.startBtn, { backgroundColor: '#E53935' }]}
@@ -391,7 +445,21 @@ export default function Navigation({ route = {}, navigation }) {
               </Text>
             </TouchableOpacity>
           </View>
-        )}
+        )} */}
+
+{tripStarted && (
+  <View style={styles.actionBox}>
+    <TouchableOpacity
+      style={[styles.startBtn, { backgroundColor: '#E53935' }]}
+      onPress={handleEndTrip}
+    >
+      <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+        END TRIP
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
+
 
       </View>
 

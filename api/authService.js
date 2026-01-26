@@ -1,12 +1,14 @@
-// import { API_BASE_URL } from '../api/api'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import api from '../api/api';
 import axios from 'axios';
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-// const GOOGLE_API_KEY = 'AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo';
-const API_BASE_URL = 'http://192.168.31.89:3000/'
+export const getCitiesApi = async () => {
+  const res = await api.get('driver/active-City');
+  return res.data; // expect array
+};
 
 export const loginApi = async (mobile, password) => {
   try {
@@ -130,8 +132,8 @@ export const updateDriverLocation = async () => {
   // console.log('📍 GPS COORDS 👉', lat, lng);
 
   const res = await api.post('/driver/location', {
-    lat,
-    lng,
+   lat: lat,
+  lng: lng,
   });
 
   console.log('📍 LOCATION SAVED 👉', res.data);
@@ -359,7 +361,7 @@ export const addBankDetailsApi = async (payload) => {
 };
 
 export const getDriverDashboardApi = async () => {
-   const token = await AsyncStorage.getItem('token');
+  const token = await AsyncStorage.getItem('token');
   return axios.get(
     `${API_BASE_URL}driver/driver-dashboard`,
     {

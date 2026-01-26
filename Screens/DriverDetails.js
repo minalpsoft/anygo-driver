@@ -8,8 +8,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { registerDriverApi } from '../api/authService';
+import { registerDriverApi, getCitiesApi } from '../api/authService';
 import { Alert } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { useEffect } from 'react';
 
 export default function DriverDetails() {
   const navigation = useNavigation();
@@ -18,9 +20,11 @@ export default function DriverDetails() {
   const [mobile, setMobile] = useState('');
   const [emergencyMobile, setEmergencyMobile] = useState('');
   const [password, setPassword] = useState('');
+  const [city, setCity] = useState('');
+  const [cities, setCities] = useState([]);
 
   const handleDriverRegister = async () => {
-    if (!firstName || !lastName || !mobile || !emergencyMobile || !password) {
+    if (!firstName || !lastName || !mobile || !emergencyMobile || !password || !city) {
       Alert.alert('Error', 'All fields are required');
       return;
     }
@@ -31,7 +35,8 @@ export default function DriverDetails() {
         lastName,
         mobile,
         emergencyMobile,
-        password
+        password,
+        city
       });
 
       console.log('DRIVER REGISTER RESPONSE:', res);
@@ -51,6 +56,23 @@ export default function DriverDetails() {
       Alert.alert('Server Error', 'Unable to register driver');
     }
   };
+
+  useEffect(() => {
+    loadCities();
+  }, []);
+
+  const loadCities = async () => {
+  try {
+    console.log("LOADING CITIES...");
+    const data = await getCitiesApi();
+    console.log("CITIES API RESPONSE:", data);
+
+    setCities(data); // directly set array of strings
+  } catch (err) {
+    console.log("CITY API ERROR:", err);
+    Alert.alert('Error', 'Failed to load cities');
+  }
+};
 
 
   return (
@@ -73,6 +95,24 @@ export default function DriverDetails() {
       <AppInput placeholder="Driver's Last Name" value={lastName} onChangeText={setLastName} />
       <AppInput placeholder="Driver's Mobile Number" value={mobile} onChangeText={setMobile} />
       <AppInput placeholder="Emergency Mobile Number" value={emergencyMobile} onChangeText={setEmergencyMobile} />
+
+     <View style={styles.pickerWrapper}>
+  <Picker
+    selectedValue={city}
+    onValueChange={(value) => setCity(value)}
+  >
+    <Picker.Item label="Select City" value="" />
+    {cities.map((c) => (
+      <Picker.Item
+        key={c}
+        label={c}
+        value={c}
+      />
+    ))}
+  </Picker>
+</View>
+
+
       <AppInput placeholder="Enter Password" secureTextEntry value={password} onChangeText={setPassword} />
       {password.length > 0 && password.length < 6 && (
         <Text style={{ color: 'red', fontSize: 12, marginLeft: 5, marginTop: 4 }}>
@@ -92,6 +132,12 @@ const styles = StyleSheet.create({
     top: 50,
     left: 20,
     zIndex: 10,
+  },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginVertical: 8,
   },
   container: {
     flex: 1,
