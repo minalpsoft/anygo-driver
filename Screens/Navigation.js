@@ -19,9 +19,11 @@ import BottomTabs from '../components/BottomTabs';
 export default function Navigation({ route = {}, navigation }) {
   // const { booking, tripStarted } = route.params;
   const booking = route?.params?.booking;
-const [tripStarted, setTripStarted] = useState(
-  route?.params?.tripStarted || false
-);
+  const [tripStarted, setTripStarted] = useState(
+    route?.params?.tripStarted || false
+  );
+  console.log('🔑 GOOGLE KEY:', GOOGLE_API_KEY); // 👈 ADD HERE
+
   // const [customer, setCustomer] = useState(null);
 
   if (!booking) {
@@ -163,7 +165,6 @@ const [tripStarted, setTripStarted] = useState(
     };
   }, []);
 
-
   /* AUTO FIT MAP (DRIVER + PICKUP) */
   useEffect(() => {
     if (mapRef.current && currentLocation) {
@@ -177,6 +178,43 @@ const [tripStarted, setTripStarted] = useState(
     }
   }, [currentLocation, tripStarted]);
 
+  /* ✅ CHECK ARRIVAL WHILE TRIP IS RUNNING */
+  useEffect(() => {
+    if (!tripStarted || !currentLocation) return;
+
+    const distanceToDrop = getDistanceInMeters(
+      currentLocation.latitude,
+      currentLocation.longitude,
+      drop.latitude,
+      drop.longitude
+    );
+
+    console.log('📏 Live distance to drop:', distanceToDrop);
+
+    if (distanceToDrop <= 50 && !arrivedAtDrop) {
+      setArrivedAtDrop(true);
+      console.log('🏁 Arrived at drop (live tracking)');
+    }
+  }, [currentLocation, tripStarted]);
+
+  /* ✅ CHECK ARRIVAL WHEN TRIP STARTS (IMPORTANT FIX) */
+  useEffect(() => {
+    if (!tripStarted || !currentLocation) return;
+
+    const distanceToDrop = getDistanceInMeters(
+      currentLocation.latitude,
+      currentLocation.longitude,
+      drop.latitude,
+      drop.longitude
+    );
+
+    console.log('📏 Distance to drop (after START TRIP):', distanceToDrop);
+
+    if (distanceToDrop <= 50 && !arrivedAtDrop) {
+      setArrivedAtDrop(true);
+      console.log('🏁 Arrived at drop (post startTrip)');
+    }
+  }, [tripStarted]);
 
   /*LOADING STATE */
   if (!currentLocation) {
@@ -193,43 +231,43 @@ const [tripStarted, setTripStarted] = useState(
   console.log('📦 PICKUP', pickup);
   console.log('📦 DROP', drop);
 
-  // const handleStartTrip = async () => {
-  //   try {
-  //     console.log('🚀 STARTING TRIP', booking._id);
-
-  //     const res = await startTripApi(booking._id);
-
-  //     Alert.alert('Success', 'Trip started');
-
-  //     navigation.replace('Navigation', {
-  //       booking,
-  //       tripStarted: true,
-  //     });
-
-  //   } catch (err) {
-  //     console.log('❌ START TRIP ERROR', err?.response?.data || err.message);
-  //     Alert.alert('Error', 'Unable to start trip');
-  //   }
-  // };
-
   const handleStartTrip = async () => {
-  console.log('🚀 STARTING TRIP (DUMMY)', booking._id);
+    try {
+      console.log('🚀 STARTING TRIP', booking._id);
 
-  // ❌ Ignore backend for now
-  try {
-    await startTripApi(booking._id);
-  } catch (err) {
-    console.log(
-      '⚠️ START TRIP API FAILED (ignored)',
-      err?.response?.data || err.message
-    );
-  }
+      const res = await startTripApi(booking._id);
 
-  // ✅ FRONTEND ONLY STATE CHANGE
-  setTripStarted(true);
+      Alert.alert('Success', 'Trip started');
 
-  Alert.alert('Trip Started', 'Navigation switched to drop location');
-};
+      navigation.replace('Navigation', {
+        booking,
+        tripStarted: true,
+      });
+
+    } catch (err) {
+      console.log('❌ START TRIP ERROR', err?.response?.data || err.message);
+      Alert.alert('Error', 'Unable to start trip');
+    }
+  };
+
+  // const handleStartTrip = async () => {
+  //   console.log('🚀 STARTING TRIP (DUMMY)', booking._id);
+
+  //   // ❌ Ignore backend for now
+  //   try {
+  //     await startTripApi(booking._id);
+  //   } catch (err) {
+  //     console.log(
+  //       '⚠️ START TRIP API FAILED (ignored)',
+  //       err?.response?.data || err.message
+  //     );
+  //   }
+
+  //   // ✅ FRONTEND ONLY STATE CHANGE
+  //   setTripStarted(true);
+
+  //   Alert.alert('Trip Started', 'Navigation switched to drop location');
+  // };
 
 
   // const handleEndTrip = async () => {
@@ -248,37 +286,37 @@ const [tripStarted, setTripStarted] = useState(
   //   }
   // };
 
-const handleEndTrip = async () => {
-  let finalFare = booking?.finalFare || Math.round(booking.distanceKm * 12); // 👈 dummy fare
+  const handleEndTrip = async () => {
+    let finalFare = booking?.finalFare || Math.round(booking.distanceKm * 12); // 👈 dummy fare
 
-  try {
-    const res = await completeTripApi(booking._id);
+    try {
+      const res = await completeTripApi(booking._id);
 
-    // ✅ If backend responds, use real fare
-    if (res?.data?.fare?.finalFare) {
-      finalFare = res.data.fare.finalFare;
+      // ✅ If backend responds, use real fare
+      if (res?.data?.fare?.finalFare) {
+        finalFare = res.data.fare.finalFare;
+      }
+
+    } catch (err) {
+      // ❌ Ignore backend error
+      console.log(
+        '⚠️ END TRIP API FAILED (ignored)',
+        err?.response?.data || err.message
+      );
     }
 
-  } catch (err) {
-    // ❌ Ignore backend error
-    console.log(
-      '⚠️ END TRIP API FAILED (ignored)',
-      err?.response?.data || err.message
+    // ✅ ALWAYS show fare & navigate
+    Alert.alert(
+      'Trip Completed',
+      `Fare: ₹${finalFare}`,
+      [
+        {
+          text: 'OK',
+          onPress: () => navigation.replace('DriverDashboard'),
+        },
+      ]
     );
-  }
-
-  // ✅ ALWAYS show fare & navigate
-  Alert.alert(
-    'Trip Completed',
-    `Fare: ₹${finalFare}`,
-    [
-      {
-        text: 'OK',
-        onPress: () => navigation.replace('DriverDashboard'),
-      },
-    ]
-  );
-};
+  };
 
 
   const handleCallCustomer = () => {
@@ -289,10 +327,6 @@ const handleEndTrip = async () => {
 
     Linking.openURL(`tel:${customerMobile}`);
   };
-
-
-  // console.log('👤 booking.customerId =', booking.customerId);
-  // console.log('👤 type =', typeof booking.customerId);
 
 
   return (
@@ -434,7 +468,7 @@ const handleEndTrip = async () => {
           </View>
         )}
 
-        {/* {tripStarted && arrivedAtDrop && (
+        {tripStarted && arrivedAtDrop && (
           <View style={styles.actionBox}>
             <TouchableOpacity
               style={[styles.startBtn, { backgroundColor: '#E53935' }]}
@@ -445,20 +479,7 @@ const handleEndTrip = async () => {
               </Text>
             </TouchableOpacity>
           </View>
-        )} */}
-
-{tripStarted && (
-  <View style={styles.actionBox}>
-    <TouchableOpacity
-      style={[styles.startBtn, { backgroundColor: '#E53935' }]}
-      onPress={handleEndTrip}
-    >
-      <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-        END TRIP
-      </Text>
-    </TouchableOpacity>
-  </View>
-)}
+        )}
 
 
       </View>

@@ -13,6 +13,7 @@ import { getAddressFromLatLng } from '../api/authService';
 import { getDriverEarningsApi, getDriverDashboardApi } from '../api/authService';
 import { useFocusEffect } from '@react-navigation/native';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 export default function DriverDashboard({ navigation }) {
 
