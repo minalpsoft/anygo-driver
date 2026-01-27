@@ -12,6 +12,7 @@ import { registerDriverApi, getCitiesApi } from '../api/authService';
 import { Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useEffect } from 'react';
+import { Axios } from 'axios';
 
 export default function DriverDetails() {
   const navigation = useNavigation();

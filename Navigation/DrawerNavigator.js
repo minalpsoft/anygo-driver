@@ -8,6 +8,7 @@ import OnGoingTripDetails from '../Screens/OnGoingTripDetails';
 import History from '../Screens/History';
 import Navigation from '../Screens/Navigation';
 import Profile from '../Screens/Profile';
+import DeleteAccount from '../Screens/DeleteAccount';
 
 
 // import Profile from '../Screens/Profile';
@@ -38,6 +39,7 @@ return (
     <Drawer.Screen name="History" component={History} />
     <Drawer.Screen name="Navigation" component={Navigation} />
     <Drawer.Screen name="Profile" component={Profile} />
+    <Drawer.Screen name="DeleteAccount" component={DeleteAccount} />
 
   </Drawer.Navigator>
 );

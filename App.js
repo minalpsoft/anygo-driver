@@ -20,7 +20,7 @@ export default function App() {
 
         {/* AUTH FLOW */}
         <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="OwnerRegistration" component={OwnerRegistration} />
+        {/* <Stack.Screen name="OwnerRegistration" component={OwnerRegistration} /> */}
         <Stack.Screen name="VehicleDetails" component={VehicleDetails} />
         <Stack.Screen name="DriverDocuments" component={DriverDocuments} />
         <Stack.Screen name="DriverDetails" component={DriverDetails} />

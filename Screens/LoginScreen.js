@@ -63,7 +63,7 @@ export default function LoginScreen() {
 
       <View style={styles.links}>
         <Text style={styles.link}>Forgot Password</Text>
-        <Text style={styles.link} onPress={() => navigation.navigate('OwnerRegistration')} >Create Account</Text>
+        <Text style={styles.link} onPress={() => navigation.navigate('DriverDetails')} >Create Account</Text>
       </View>
     </LinearGradient>
   );

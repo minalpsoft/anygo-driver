@@ -4,10 +4,11 @@ import api from '../api/api';
 import axios from 'axios';
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+import * as SecureStore from 'expo-secure-store';
 
 export const getCitiesApi = async () => {
-  const res = await api.get('driver/active-City');
-  return res.data; // expect array
+  const res = await axios.get(`${API_BASE_URL}driver/active-City`);
+  return res.data;
 };
 
 export const loginApi = async (mobile, password) => {
@@ -370,4 +371,45 @@ export const getDriverDashboardApi = async () => {
       },
     }
   );
+};
+
+
+// update docs of driver
+export const updateDriverDocumentsApi = async (formData) => {
+  const token = await AsyncStorage.getItem('token'); // ✅ FIX HERE
+  console.log('🪪 TOKEN 👉', token);
+
+  const res = await fetch(
+    `${API_BASE_URL}driver/profile/documents`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }
+  );
+
+  return res.json();
+};
+
+// delete account
+export const deleteDriverAccountApi = async () => {
+  const token = await AsyncStorage.getItem('driverToken');
+
+  const res = await fetch(`${API_BASE_URL}driver/delete-account`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || 'Failed to delete account');
+  }
+
+  return data;
 };
