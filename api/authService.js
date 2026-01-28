@@ -373,7 +373,6 @@ export const getDriverDashboardApi = async () => {
   );
 };
 
-
 // update docs of driver
 export const updateDriverDocumentsApi = async (formData) => {
   const token = await AsyncStorage.getItem('token'); // ✅ FIX HERE

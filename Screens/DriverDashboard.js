@@ -262,7 +262,10 @@ export default function DriverDashboard({ navigation }) {
     };
 
     const acceptBooking = async (req) => {
+
         try {
+            console.log('🔥 ACCEPT BOOKING START', req._id);
+
             await api.post(`/driver/${req._id}/accept`);
 
             setIsOnline(false); // 🛑 stop polling
