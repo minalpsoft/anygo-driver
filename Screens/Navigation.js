@@ -250,42 +250,6 @@ export default function Navigation({ route = {}, navigation }) {
     }
   };
 
-  // const handleStartTrip = async () => {
-  //   console.log('🚀 STARTING TRIP (DUMMY)', booking._id);
-
-  //   // ❌ Ignore backend for now
-  //   try {
-  //     await startTripApi(booking._id);
-  //   } catch (err) {
-  //     console.log(
-  //       '⚠️ START TRIP API FAILED (ignored)',
-  //       err?.response?.data || err.message
-  //     );
-  //   }
-
-  //   // ✅ FRONTEND ONLY STATE CHANGE
-  //   setTripStarted(true);
-
-  //   Alert.alert('Trip Started', 'Navigation switched to drop location');
-  // };
-
-
-  // const handleEndTrip = async () => {
-  //   try {
-  //     const res = await completeTripApi(booking._id);
-
-  //     Alert.alert(
-  //       'Trip Completed',
-  //       `Fare: ₹${res.data.fare.finalFare}`
-  //     );
-
-  //     navigation.replace('DriverDashboard');
-  //   } catch (err) {
-  //     console.log('❌ END TRIP ERROR', err?.response?.data || err.message);
-  //     Alert.alert('Error', 'Unable to complete trip');
-  //   }
-  // };
-
   const handleEndTrip = async () => {
     let finalFare = booking?.finalFare || Math.round(booking.distanceKm * 12); // 👈 dummy fare
 
@@ -351,7 +315,7 @@ export default function Navigation({ route = {}, navigation }) {
                   !customerMobile && styles.callBtnDisabled,
                 ]}
                 disabled={!customerMobile}
-                onPress={() => Linking.openURL(`tel:${customerMobile}`)}
+                onPress={handleCallCustomer}
               >
                 <Ionicons
                   name="call"
