@@ -54,15 +54,10 @@ export default function LoginScreen() {
         onChangeText={setMobile} />
       <AppInput placeholder="Enter Password" secureTextEntry onChangeText={setPassword} />
 
-      {/* <AppButton title="Submit" 
-      onPress={() => navigation.navigate('OwnerRegistration')}
-      // navigation.replace('App'); 
-      /> */}
-
       <AppButton title={loading ? "Please wait..." : "Submit"} onPress={handleLogin} />
 
       <View style={styles.links}>
-        <Text style={styles.link}>Forgot Password</Text>
+        <Text style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>Forgot Password</Text>
         <Text style={styles.link} onPress={() => navigation.navigate('DriverDetails')} >Create Account</Text>
       </View>
     </LinearGradient>
