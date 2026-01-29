@@ -394,7 +394,7 @@ export const updateDriverDocumentsApi = async (formData) => {
 
 // delete account
 export const deleteDriverAccountApi = async () => {
-  const token = await AsyncStorage.getItem('driverToken');
+  const token = await AsyncStorage.getItem('token');
 
   const res = await fetch(`${API_BASE_URL}driver/delete-account`, {
     method: 'DELETE',

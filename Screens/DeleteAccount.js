@@ -32,12 +32,13 @@ export default function DeleteAccount() {
             await AsyncStorage.multiRemove([
                 'driverToken',
                 'otp_mobile',
+                'token',
             ]);
 
             // 🔥 Reset navigation to Login
             navigation.reset({
                 index: 0,
-                routes: [{ name: 'AuthStack' }],
+                routes: [{ name: 'Login' }],
             });
 
 

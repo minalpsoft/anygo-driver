@@ -29,8 +29,8 @@ export default function App() {
         <Stack.Screen name="DriverVerification" component={DriverVerification} />
         <Stack.Screen name="TodayCard" component={TodayCard} />
         <Stack.Screen name="Navigation" component={Navigation} />
-<Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-<Stack.Screen name="ResetPassword" component={ResetPassword} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <Stack.Screen name="ResetPassword" component={ResetPassword} />
 
         {/* APP FLOW */}
         <Stack.Screen name="DriverDashboard" component={DrawerNavigator} />
