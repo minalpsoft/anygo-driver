@@ -23,34 +23,12 @@ export default function DriverDashboard({ navigation }) {
     const [walletBalance, setWalletBalance] = useState(0);
     const [isDocumentVerified, setIsDocumentVerified] = useState(false);
 
-    
+
     useFocusEffect(
         useCallback(() => {
             updateDriverLocation(); // 📍 update GPS whenever dashboard opens
         }, [])
     );
-
-
-    useEffect(() => {
-        if (!isOnline) return;
-
-        let isMounted = true;
-
-        const poll = async () => {
-            if (!isMounted) return;
-            await fetchRequests();
-        };
-
-        poll(); // 🔥 immediate first fetch
-
-        const interval = setInterval(poll, 3000);
-
-        return () => {
-            isMounted = false;
-            clearInterval(interval);
-        };
-    }, [isOnline]);
-
 
     useFocusEffect(
         useCallback(() => {
@@ -118,6 +96,10 @@ export default function DriverDashboard({ navigation }) {
 
     const fetchRequests = async () => {
         try {
+            if (!isOnline) {
+                setRequests([]); // 🧹 hard clear
+                return;
+            }
             const res = await api.get('/driver/booking-requests');
 
             if (!res.data || res.data.length === 0) {
@@ -126,7 +108,7 @@ export default function DriverDashboard({ navigation }) {
 
             setRequests(prev => {
                 if (JSON.stringify(prev) === JSON.stringify(res.data)) {
-                    return prev; // no unnecessary re-render
+                    return prev;
                 }
                 return res.data;
             });
@@ -135,6 +117,22 @@ export default function DriverDashboard({ navigation }) {
             console.log('❌ FETCH ERROR 👉', e.response?.data || e.message);
         }
     };
+
+    useEffect(() => {
+        if (!isOnline) {
+            setRequests([]);
+            return;
+        }
+
+        const interval = setInterval(() => {
+            fetchRequests();
+        }, 3000);
+
+        fetchRequests(); // first fetch
+
+        return () => clearInterval(interval);
+    }, [isOnline]);
+
 
     useFocusEffect(
         useCallback(() => {
@@ -179,51 +177,51 @@ export default function DriverDashboard({ navigation }) {
         return null;
     };
 
-
     useEffect(() => {
-        if (!requests.length) return;
+    if (!requests.length) return;
 
-        const loadAddresses = async () => {
-            const updated = await Promise.all(
-                requests.map(async (req) => {
+    let cancelled = false;
 
-                    if (req.pickupAddress && req.dropAddress) {
-                        return req;
-                    }
+    const loadAddresses = async () => {
+        const updated = await Promise.all(
+            requests.map(async (req) => {
+                if (req.pickupAddress && req.dropAddress) return req;
 
-                    const pickup = resolveLatLng(req.pickupLocation);
-                    const drop = resolveLatLng(req.dropLocation);
+                const pickup = resolveLatLng(req.pickupLocation);
+                const drop = resolveLatLng(req.dropLocation);
 
-                    if (!pickup || !drop) {
-                        return {
-                            ...req,
-                            pickupAddress: 'Location not available',
-                            dropAddress: 'Location not available',
-                        };
-                    }
-
-                    const pickupAddress = await getAddressFromLatLng(
-                        pickup.lat,
-                        pickup.lng
-                    );
-                    const dropAddress = await getAddressFromLatLng(
-                        drop.lat,
-                        drop.lng
-                    );
-
+                if (!pickup || !drop) {
                     return {
                         ...req,
-                        pickupAddress,
-                        dropAddress,
+                        pickupAddress: 'Location not available',
+                        dropAddress: 'Location not available',
                     };
-                })
+                }
+
+                const pickupAddress = await getAddressFromLatLng(pickup.lat, pickup.lng);
+                const dropAddress = await getAddressFromLatLng(drop.lat, drop.lng);
+
+                return {
+                    ...req,
+                    pickupAddress,
+                    dropAddress,
+                };
+            })
+        );
+
+        if (!cancelled) {
+            setRequests(prev =>
+                prev.map(r => updated.find(u => u._id === r._id) || r)
             );
+        }
+    };
 
-            setRequests(updated);
-        };
+    loadAddresses();
 
-        loadAddresses();
-    }, [requests]);
+    return () => {
+        cancelled = true;
+    };
+}, []);
 
 
     const toggleOnline = async () => {
@@ -281,6 +279,18 @@ export default function DriverDashboard({ navigation }) {
                 booking: req,
                 tripStarted: false,
             });
+        }
+    };
+
+    const rejectBooking = async (bookingId) => {
+        try {
+            await api.post(`driver/${bookingId}/reject`);
+
+            // optimistic remove
+            setRequests(prev => prev.filter(r => r._id !== bookingId));
+
+        } catch (e) {
+            Alert.alert('Error', 'Could not reject booking');
         }
     };
 
@@ -414,16 +424,24 @@ export default function DriverDashboard({ navigation }) {
                                     <View style={styles.headerRow}>
                                         <Text style={styles.cardTitle}>New Request</Text>
 
-                                        {req.status === 'DRIVER_NOTIFIED' && (
+                                        <View style={{ flexDirection: 'row', gap: 8 }}>
+
                                             <TouchableOpacity
                                                 style={styles.acceptBtn}
                                                 onPress={() => acceptBooking(req)}
                                             >
                                                 <Text style={styles.acceptText}>Accept</Text>
                                             </TouchableOpacity>
-                                        )}
 
+                                            <TouchableOpacity
+                                                style={styles.rejectBtn}
+                                                onPress={() => rejectBooking(req._id)}
+                                            >
+                                                <Text style={styles.rejectText}>Reject</Text>
+                                            </TouchableOpacity>
+                                        </View>
                                     </View>
+
 
                                     <Text style={styles.label}>Pickup Point</Text>
                                     <Text>
@@ -528,6 +546,16 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F6FA',
     },
+    rejectBtn: {
+        backgroundColor: '#eee',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+    },
+    rejectText: {
+        color: 'red',
+    },
+
 
     cardTitle: {
         fontWeight: 'bold',
