@@ -51,28 +51,37 @@ export default function VehicleDetails() {
   return (
     <LinearGradient
       colors={['#ffffff', '#f2f6ff']}
-      style={styles.container}>
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        overScrollMode="always"
+        bounces={true}
+      >
 
-      <View style={styles.backContainer}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back-outline" size={28} color="#000" />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.backContainer}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back-outline" size={28} color="#000" />
+          </TouchableOpacity>
+        </View>
 
 
-      <AppLogo />
+        <AppLogo />
 
-      <Text style={styles.title}>Vehicle Details</Text>
+        <Text style={styles.title}>Vehicle Details</Text>
 
-     
-      <AppInput placeholder="Vehicle Make" value={vehicleMake} onChangeText={setVehicleMake} />
-      <AppInput placeholder="Vehicle Model" value={vehicleModel} onChangeText={setVehicleModel} />
-      <AppInput placeholder="Vehicle Type" value={vehicleType} onChangeText={setVehicleType} />
-      <AppInput placeholder="Vehicle Number" value={vehicleNumber} onChangeText={setVehicleNumber} />
-      <AppInput placeholder="Chassis Number" value={chassisNumber} onChangeText={setChassisNumber} />
 
-      <AppButton title="Next" onPress={handleVehicleSubmit} />
-      
+        <AppInput placeholder="Vehicle Make" value={vehicleMake} onChangeText={setVehicleMake} />
+        <AppInput placeholder="Vehicle Model" value={vehicleModel} onChangeText={setVehicleModel} />
+        <AppInput placeholder="Vehicle Type" value={vehicleType} onChangeText={setVehicleType} />
+        <AppInput placeholder="Vehicle Number" value={vehicleNumber} onChangeText={setVehicleNumber} />
+        <AppInput placeholder="Chassis Number" value={chassisNumber} onChangeText={setChassisNumber} />
+
+        <AppButton title="Next" onPress={handleVehicleSubmit} />
+
+      </ScrollView>
     </LinearGradient>
   );
 }
@@ -85,9 +94,10 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   container: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: '#F7F9FC',
     padding: 20,
+    paddingBottom: 80,
     // justifyContent: 'center',
   },
   title: {

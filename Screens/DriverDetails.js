@@ -34,7 +34,7 @@ export default function DriverDetails() {
       return;
     }
 
-       if (!accepted) {
+    if (!accepted) {
       Alert.alert('Terms Required', 'Please accept Terms & Conditions to continue');
       return;
     }
@@ -47,7 +47,7 @@ export default function DriverDetails() {
         emergencyMobile,
         password,
         city,
-        vehicleNumber: `TEMP-${mobile}`
+        // vehicleNumber: `TEMP-${mobile}`
       });
 
       console.log('DRIVER REGISTER RESPONSE:', res);
@@ -140,29 +140,29 @@ export default function DriverDetails() {
 
 
         <View style={styles.checkboxContainer}>
-        <Checkbox
-          value={accepted}
-          onValueChange={setAccepted}
-          color={accepted ? COLORS.primary : undefined}
-        />
+          <Checkbox
+            value={accepted}
+            onValueChange={setAccepted}
+            color={accepted ? COLORS.primary : undefined}
+          />
 
-        <View>
-          <Text style={styles.termsText}>
-            I agree to accept Terms & Conditions
-          </Text>
+          <View>
+            <Text style={styles.termsText}>
+              I agree to accept Terms & Conditions
+            </Text>
 
-          <Text style={styles.termsText}>
-            <Text
-              style={styles.link}
-              onPress={() => setShowTerms(true)}
-            >
-              Click here
-            </Text>{' '}
-            to read Terms and Conditions and Privacy Policy
-          </Text>
+            <Text style={styles.termsText}>
+              <Text
+                style={styles.link}
+                onPress={() => setShowTerms(true)}
+              >
+                Click here
+              </Text>{' '}
+              to read Terms and Conditions and Privacy Policy
+            </Text>
+          </View>
+
         </View>
-
-      </View>
 
 
 
@@ -186,63 +186,45 @@ export default function DriverDetails() {
               <ScrollView showsVerticalScrollIndicator={false}>
                 <Text style={styles.modalText}>
                   {/* Customer Terms and Conditions{'\n\n'} */}
-                  <Text style={styles.sectionTitle}>1. Contractual Relationship{'\n\n'}</Text>
+                  <Text style={styles.sectionTitle}>1. Introduction and Scope {'\n\n'}</Text>
                   <Text style={styles.modalText}>
-                    • The Platform: These terms govern your access to the [Company Name] mobile
-                    application and website. By using our services, you agree to these terms.{'\n\n'}
-                    • Service Provider: [Company Name] provides a technology platform that connects you
-                    with independent third-party drivers. [Company Name] does not provide
-                    transportation services; the transportation is provided by the independent Partner
-                    Driver.</Text>{'\n\n'}
+                    • By accessing [Company Name] (the "Site") or booking any travel services through us, you agree
+                    to be bound by these Terms and Condi ons. These terms apply to all visitors, users, and
+                    customer.{'\n\n'}</Text>
 
-                  <Text style={styles.sectionTitle}>2. User Accounts{'\n\n'}</Text>
-                  • Eligibility: You must be at least 18 years old to create an account.{'\n\n'}
-                  • Accuracy: You agree to provide accurate, complete, and up-to-date information (Name,
-                  Phone Number, Payment Method).{'\n\n'}
-                  • Security: You are responsible for all activity that occurs under your account.{'\n\n'} Notify us
-                  immediately if you suspect any unauthorized access.{'\n\n'}
+                  <Text style={styles.sectionTitle}>2. Cancellations and Refunds{'\n\n'}</Text>
+                  • Cancellations are governed by both [Company Name]’s policies and the specific Provider’s
+                  policies. {'\n\n'}
+                  • Service Fees: [Company Name] may charge a non-refundable processing fee for
+                  bookings and cancellations. {'\n\n'}
+                  • Refund Timeline: Refunds, if applicable, will be processed only a er we receive the
+                  funds back from the Provider. This may take [Number, e.g., 7-14] business days.{'\n\n'}
 
-                  <Text style={styles.sectionTitle}>3. Use of Services{'\n\n'}</Text>
-                  • Booking: A booking is confirmed once a Partner Driver accepts your request. We do not
-                  guarantee that a driver will be available for every request.{'\n\n'}
-                  • Passenger Conduct: You must treat drivers with respect. You may not carry illegal
-                  substances, hazardous materials, or engage in behavior that endangers the driver or the
-                  vehicle.{'\n\n'}
-                  • Maximum Occupancy: You agree not to exceed the seating capacity of the vehicle type
-                  you have booked (e.g., 4 passengers for a sedan).{'\n\n'}
+                  • Non-Refundable Rates: Some bookings (e.g., "Basic Economy" or "Last Minute Deals")
+                  are strictly non-refundable.{'\n\n'}
 
-                  <Text style={styles.sectionTitle}>4. Payments, Tolls, and Taxes{'\n\n'}</Text>
-                  • Fares: Fares are calculated based on distance, time, and demand (surge pricing). An
-                  estimated fare will be shown before you book.{'\n\n'}
-                  • Tolls and Parking: Any road tolls, airport entry fees, or parking charges incurred during
-                  the trip are the responsibility of the customer and will be added to the final invoice.{'\n\n'}
-                  • Methods: Payments can be made via [Credit/Debit Card, Digital Wallets, or Cash].{'\n\n'}
+                  <Text style={styles.sectionTitle}>3. Changes and Force Majeure{'\n\n'}</Text>
+                  • Changes by You: Requests to change travel dates or names are subject to availability and
+                  Provider fees.{'\n\n'}
+                  • Force Majeure: [Company Name] is not liable for failure to perform its obliga ons due to
+                  events beyond our control, including but not limited to: natural disasters, pandemics,
+                  war, strikes, or government restric ons. {'\n\n'}
+
+                  <Text style={styles.sectionTitle}>4. User Conduct and Prohibited Activities {'\n\n'}</Text>
+                  You agree not to - {'\n\n'}
+                  • Use the site for any specula ve, false, or fraudulent bookings.{'\n\n'}
+                  • Use automated systems (bots) to scrape data from our platform.{'\n\n'}
                   • Cancellations and Waiting Fees
-                  • Cancellation Fee: A fee may be charged if you cancel a trip after a driver has
-                  been assigned and has traveled toward your location for more than [e.g., 2
-                  minutes].{'\n\n'}
-                  • Waiting Fee: Drivers will wait for a maximum of [e.g., 5 minutes] at the pickup location.{'\n\n'}
-                  After this, a per-minute waiting fee may apply, or the driver may cancel the trip as a "no-
-                  show," incurring a cancellation fee for you.{'\n\n'}
+                  • Violate any local or interna onal laws during your travel. .{'\n\n'}
 
-                  <Text style={styles.sectionTitle}>5. Damage to Vehicles{'\n\n'}</Text>
-                  • Cleaning Fees: If you or your guests spill liquids, vomit, or otherwise soil the vehicle
-                  interior, you will be charged a Cleaning Fee (based on local professional cleaning rates)
-                  to compensate the driver for their loss of earnings and cleaning costs.{'\n\n'}
-                  • Repair: You are responsible for the cost of repair for any damage to the vehicle caused
-                  by your intentional or negligent actions.{'\n\n'}
+                  <Text style={styles.sectionTitle}>5. Limitation of Liability {'\n\n'}</Text>
+                  • To the maximum extent permi ed by law, [Company Name] shall not be liable for any direct,
+                  indirect, or consequen al loss arising from your use of our services or the failure of any Third
+                  Party Provider.{'\n\n'}
 
-                  <Text style={styles.sectionTitle}>6. Limitation of Liability{'\n\n'}</Text>
-                  • [Company Name] is not liable for indirect, incidental, or consequential damages,
-                  including lost profits or personal injury, arising out of the use of the third-party
-                  transportation service.{'\n\n'}
-                  • We are not responsible for items left behind in vehicles. However, we will provide a "Lost
-                  and Found" assistance feature to help you contact the driver.{'\n\n'}
-
-                  <Text style={styles.sectionTitle}>7. Privacy Policy{'\n\n'}</Text>
-                  • Your location data is tracked during the trip to ensure safety and accurate billing. Please
-                  refer to our [Privacy Link] for details on how we protect your data.{'\n\n'}
-                </Text>
+                  <Text style={styles.sectionTitle}>6. Governing Law{'\n\n'}</Text>
+                  • These terms are governed by the laws of [Insert State/Country]. Any disputes shall be resolved
+                  in the courts of [Insert City/Region].{'\n\n'}</Text>
               </ScrollView>
 
               <TouchableOpacity
