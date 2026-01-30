@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "anygo-driver",
-    "slug": "anygo",
+    "slug": "anygo-driver",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,6 +11,7 @@
       "backgroundColor": "#FF1E1E"
     },
     "android": {
+      "package": "com.minalpsoft.anygodriver",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FF1E1E"
@@ -19,8 +20,7 @@
         "googleMaps": {
           "apiKey": "AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo"
         }
-      },
-      "package": "com.minalpsoft.anygo"
+      }
     },
     "plugins": [
       "expo-font",
