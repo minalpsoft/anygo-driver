@@ -14,6 +14,7 @@ import { addBankDetailsApi } from '../api/authService';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDriverDashboardApi } from '../api/authService';
+import { getDriverBankDetailsApi } from '../api/authService';
 
 export default function Withdrawal({ navigation }) {
 
@@ -30,33 +31,65 @@ export default function Withdrawal({ navigation }) {
         ifscCode: '',
     });
 
+    // const loadData = async () => {
+    //     try {
+    //         const [earnRes, historyRes] = await Promise.all([
+    //             getDriverEarningsApi(),
+    //             getWithdrawalHistoryApi(),
+    //             getDriverDashboardApi(),
+    //         ]);
+    //         // console.log('EARNINGS RESPONSE 👉', JSON.stringify(earnRes.data, null, 2));
+
+    //         setEarnings(earnRes.data);
+    //         setHistory(historyRes.data || []);
+
+    //         if (earnRes.data?.bankDetails) {
+    //             setHasBankDetails(true);
+
+    //             setBankForm({
+    //                 bankName: earnRes.data.bankDetails.bankName || '',
+    //                 accountHolderName: earnRes.data.bankDetails.accountHolderName || '',
+    //                 bankAccountNumber: earnRes.data.bankDetails.bankAccountNumber || '',
+    //                 ifscCode: earnRes.data.bankDetails.ifscCode || '',
+    //             });
+    //         } 
+
+    //     } catch (err) {
+    //         console.log(err);
+    //     }
+    // };
+
     const loadData = async () => {
-        try {
-            const [earnRes, historyRes] = await Promise.all([
-                getDriverEarningsApi(),
-                getWithdrawalHistoryApi(),
-                getDriverDashboardApi(),
-            ]);
-            // console.log('EARNINGS RESPONSE 👉', JSON.stringify(earnRes.data, null, 2));
+  try {
+    const [
+      earnRes,
+      historyRes,
+      bankRes
+    ] = await Promise.all([
+      getDriverEarningsApi(),
+      getWithdrawalHistoryApi(),
+      getDriverBankDetailsApi(),
+    ]);
 
-            setEarnings(earnRes.data);
-            setHistory(historyRes.data || []);
+    setEarnings(earnRes.data);
+    setHistory(historyRes.data || []);
 
-            if (earnRes.data?.bankDetails) {
-                setHasBankDetails(true);
+    if (bankRes.hasBankDetails) {
+      setHasBankDetails(true);
+      setBankForm({
+        bankName: bankRes.bankDetails.bankName || '',
+        accountHolderName: bankRes.bankDetails.accountHolderName || '',
+        bankAccountNumber: bankRes.bankDetails.bankAccountNumber || '',
+        ifscCode: bankRes.bankDetails.ifscCode || '',
+      });
+    } else {
+      setHasBankDetails(false);
+    }
 
-                setBankForm({
-                    bankName: earnRes.data.bankDetails.bankName || '',
-                    accountHolderName: earnRes.data.bankDetails.accountHolderName || '',
-                    bankAccountNumber: earnRes.data.bankDetails.bankAccountNumber || '',
-                    ifscCode: earnRes.data.bankDetails.ifscCode || '',
-                });
-            } 
-
-        } catch (err) {
-            console.log(err);
-        }
-    };
+  } catch (err) {
+    console.log('Load withdrawal data error', err);
+  }
+};
 
 
     useFocusEffect(
@@ -71,7 +104,7 @@ export default function Withdrawal({ navigation }) {
             return;
         }
 
-        if (!amount || Number(amount) <= 0) {
+        if (!amount || Number(amount) <= 400) {
             Alert.alert('Error', 'Enter valid amount');
             return;
         }

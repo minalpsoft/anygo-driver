@@ -412,3 +412,15 @@ export const deleteDriverAccountApi = async () => {
 
   return data;
 };
+
+export const getDriverBankDetailsApi = async () => {
+  const token = await SecureStore.getItemAsync('token');
+
+  const res = await api.get(`/driver/bank-details`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data;
+};
