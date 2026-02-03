@@ -22,7 +22,7 @@ export default function Navigation({ route = {}, navigation }) {
   const [tripStarted, setTripStarted] = useState(
     route?.params?.tripStarted || false
   );
-  console.log('🔑 GOOGLE KEY:', GOOGLE_API_KEY); // 👈 ADD HERE
+  // console.log('🔑 GOOGLE KEY:', GOOGLE_API_KEY); // 👈 ADD HERE
 
   // const [customer, setCustomer] = useState(null);
 

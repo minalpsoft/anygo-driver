@@ -178,50 +178,97 @@ export default function DriverDashboard({ navigation }) {
     };
 
     useEffect(() => {
-    if (!requests.length) return;
+        if (!requests.length) return;
 
-    let cancelled = false;
+        let cancelled = false;
 
-    const loadAddresses = async () => {
-        const updated = await Promise.all(
-            requests.map(async (req) => {
-                if (req.pickupAddress && req.dropAddress) return req;
+        const loadAddresses = async () => {
+            const updated = await Promise.all(
+                requests.map(async (req) => {
+                    if (req.pickupAddress && req.dropAddress) return req;
 
-                const pickup = resolveLatLng(req.pickupLocation);
-                const drop = resolveLatLng(req.dropLocation);
+                    const pickup = resolveLatLng(req.pickupLocation);
+                    const drop = resolveLatLng(req.dropLocation);
 
-                if (!pickup || !drop) {
+                    if (!pickup || !drop) {
+                        return {
+                            ...req,
+                            pickupAddress: 'Location not available',
+                            dropAddress: 'Location not available',
+                        };
+                    }
+
+                    const pickupAddress = await getAddressFromLatLng(pickup.lat, pickup.lng);
+                    const dropAddress = await getAddressFromLatLng(drop.lat, drop.lng);
+
                     return {
                         ...req,
-                        pickupAddress: 'Location not available',
-                        dropAddress: 'Location not available',
+                        pickupAddress,
+                        dropAddress,
                     };
-                }
-
-                const pickupAddress = await getAddressFromLatLng(pickup.lat, pickup.lng);
-                const dropAddress = await getAddressFromLatLng(drop.lat, drop.lng);
-
-                return {
-                    ...req,
-                    pickupAddress,
-                    dropAddress,
-                };
-            })
-        );
-
-        if (!cancelled) {
-            setRequests(prev =>
-                prev.map(r => updated.find(u => u._id === r._id) || r)
+                })
             );
-        }
-    };
 
-    loadAddresses();
+            if (!cancelled) {
+                setRequests(prev =>
+                    prev.map(r => updated.find(u => u._id === r._id) || r)
+                );
+            }
+        };
 
-    return () => {
-        cancelled = true;
-    };
-}, []);
+        loadAddresses();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [requests]); // ✅ THIS IS THE KEY
+
+
+    useEffect(() => {
+        if (!requests.length) return;
+
+        let cancelled = false;
+
+        const loadAddresses = async () => {
+            const updated = await Promise.all(
+                requests.map(async (req) => {
+                    if (req.pickupAddress && req.dropAddress) return req;
+
+                    const pickup = resolveLatLng(req.pickupLocation);
+                    const drop = resolveLatLng(req.dropLocation);
+
+                    if (!pickup || !drop) {
+                        return {
+                            ...req,
+                            pickupAddress: 'Location not available',
+                            dropAddress: 'Location not available',
+                        };
+                    }
+
+                    const pickupAddress = await getAddressFromLatLng(pickup.lat, pickup.lng);
+                    const dropAddress = await getAddressFromLatLng(drop.lat, drop.lng);
+
+                    return {
+                        ...req,
+                        pickupAddress,
+                        dropAddress,
+                    };
+                })
+            );
+
+            if (!cancelled) {
+                setRequests(prev =>
+                    prev.map(r => updated.find(u => u._id === r._id) || r)
+                );
+            }
+        };
+
+        loadAddresses();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
 
     const toggleOnline = async () => {
@@ -481,7 +528,7 @@ export default function DriverDashboard({ navigation }) {
                 )}
 
                 {/* ONGOING TRIP */}
-                {ongoingTrip && (
+                {/* {ongoingTrip && (
                     <Card>
                         <View style={styles.rowBetween}>
                             <Text style={styles.cardTitle}>Ongoing Trip</Text>
@@ -518,7 +565,7 @@ export default function DriverDashboard({ navigation }) {
                             <Text style={styles.acceptText}>Start Trip</Text>
                         </TouchableOpacity>
                     </Card>
-                )}
+                )} */}
 
                 {/* QR CODE */}
                 <View style={styles.qrCard}>
