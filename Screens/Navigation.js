@@ -15,6 +15,7 @@ import Card from '../components/Card';
 import { Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomTabs from '../components/BottomTabs';
+import { updateDriverLocation } from '../api/authService';
 
 export default function Navigation({ route = {}, navigation }) {
   // const { booking, tripStarted } = route.params;
@@ -124,6 +125,9 @@ export default function Navigation({ route = {}, navigation }) {
             duration: 3000,
             useNativeDriver: false,
           }).start();
+
+           updateDriverLocation(latitude, longitude)
+      .catch(err => console.log('❌ LOCATION UPDATE FAILED', err));
 
           const target = tripStarted ? drop : pickup;
 
