@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "anygo-driver",
+    "slug": "anygo-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme":"anygo-driver",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF1E1E"
+    },
+    "android": {
+      "package": "com.anygodriver",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF1E1E"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCe-FeBbj44cBU0lnDPbcL-w0fTKRp_HVo"
+        }
+      }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7a2d0161-8726-4eff-ae37-a5c44316c129"
+      }
+    }
+  }
+}
