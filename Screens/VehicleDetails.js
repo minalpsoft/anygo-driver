@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity,ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AppLogo from '../components/AppLogo';
 import AppInput from '../components/AppInput';
@@ -18,10 +18,72 @@ export default function VehicleDetails() {
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [chassisNumber, setChassisNumber] = useState('');
 
+  const validateVehicle = () => {
+    const nameRegex = /^[A-Za-z ]+$/;
+    const modelRegex = /^[A-Za-z0-9 ]+$/;
+    const vehicleNumberRegex = /^[A-Z]{2}[ -]?\d{2}[ -]?[A-Z]{1,2}[ -]?\d{4}$/;
+    const chassisRegex = /^[A-HJ-NPR-Z0-9]{17}$/;
+
+    if (!vehicleMake.trim())
+      return "Vehicle make is required";
+    if (!nameRegex.test(vehicleMake))
+      return "Vehicle make should contain only letters";
+
+    if (!vehicleModel.trim())
+      return "Vehicle model is required";
+    if (!modelRegex.test(vehicleModel))
+      return "Vehicle model contains invalid characters";
+
+    if (!vehicleType.trim())
+      return "Vehicle type is required";
+
+    if (!vehicleNumber.trim())
+      return "Vehicle number is required";
+    if (!vehicleNumberRegex.test(vehicleNumber.toUpperCase()))
+      return "Enter valid vehicle number (e.g., MH12AB1234)";
+
+    if (!chassisNumber.trim())
+      return "Chassis number is required";
+    if (!chassisRegex.test(chassisNumber.toUpperCase()))
+      return "Chassis number must be 17 characters (valid VIN)";
+
+    return null;
+  };
+
+  // const handleVehicleSubmit = async () => {
+  //   if (!vehicleMake || !vehicleModel || !vehicleType || !vehicleNumber || !chassisNumber) {
+  //     Alert.alert('Error', 'All fields are required');
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await addVehicleApi({
+  //       vehicleMake,
+  //       vehicleModel,
+  //       vehicleType,
+  //       vehicleNumber,
+  //       chassisNumber,
+  //     });
+
+  //     console.log('VEHICLE RESPONSE:', res);
+
+  //     if (res?.message) {
+  //       navigation.navigate('DriverDocuments');
+  //     } else {
+  //       Alert.alert('Error', 'Vehicle details failed');
+  //     }
+
+  //   } catch (err) {
+  //     console.log(err);
+  //     Alert.alert('Server Error', 'Unable to save vehicle');
+  //   }
+  // };
 
   const handleVehicleSubmit = async () => {
-    if (!vehicleMake || !vehicleModel || !vehicleType || !vehicleNumber || !chassisNumber) {
-      Alert.alert('Error', 'All fields are required');
+    const error = validateVehicle();
+
+    if (error) {
+      Alert.alert("Validation Error", error);
       return;
     }
 
@@ -30,11 +92,9 @@ export default function VehicleDetails() {
         vehicleMake,
         vehicleModel,
         vehicleType,
-        vehicleNumber,
-        chassisNumber,
+        vehicleNumber: vehicleNumber.toUpperCase(),
+        chassisNumber: chassisNumber.toUpperCase(),
       });
-
-      console.log('VEHICLE RESPONSE:', res);
 
       if (res?.message) {
         navigation.navigate('DriverDocuments');
@@ -43,7 +103,6 @@ export default function VehicleDetails() {
       }
 
     } catch (err) {
-      console.log(err);
       Alert.alert('Server Error', 'Unable to save vehicle');
     }
   };
@@ -54,11 +113,15 @@ export default function VehicleDetails() {
       style={{ flex: 1 }}
     >
       <ScrollView
-        contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         overScrollMode="always"
         bounces={true}
+        contentContainerStyle={{
+          paddingBottom: 300,
+          backgroundColor: '#F7F9FC',
+          padding: 20,
+        }}
       >
 
         <View style={styles.backContainer}>
@@ -73,11 +136,36 @@ export default function VehicleDetails() {
         <Text style={styles.title}>Vehicle Details</Text>
 
 
-        <AppInput placeholder="Vehicle Make" value={vehicleMake} onChangeText={setVehicleMake} />
-        <AppInput placeholder="Vehicle Model" value={vehicleModel} onChangeText={setVehicleModel} />
-        <AppInput placeholder="Vehicle Type" value={vehicleType} onChangeText={setVehicleType} />
-        <AppInput placeholder="Vehicle Number" value={vehicleNumber} onChangeText={setVehicleNumber} />
-        <AppInput placeholder="Chassis Number" value={chassisNumber} onChangeText={setChassisNumber} />
+        <AppInput
+          placeholder="Vehicle Make"
+          value={vehicleMake}
+          onChangeText={(t) => setVehicleMake(t.replace(/[^A-Za-z ]/g, ""))}
+        />
+
+        <AppInput
+          placeholder="Vehicle Model"
+          value={vehicleModel}
+          onChangeText={(t) => setVehicleModel(t.replace(/[^A-Za-z0-9 ]/g, ""))}
+        />
+
+        <AppInput
+          placeholder="Vehicle Type"
+          value={vehicleType}
+          onChangeText={(t) =>
+            setVehicleType(t.replace(/[^A-Za-z ]/g, ""))
+          }
+        />
+        <AppInput
+          placeholder="Vehicle Number"
+          value={vehicleNumber}
+          onChangeText={(t) => setVehicleNumber(t.toUpperCase())}
+        />
+
+        <AppInput
+          placeholder="Chassis Number"
+          value={chassisNumber}
+          onChangeText={(t) => setChassisNumber(t.toUpperCase())}
+        />
 
         <AppButton title="Next" onPress={handleVehicleSubmit} />
 

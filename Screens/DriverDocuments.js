@@ -20,23 +20,11 @@ export default function DriverDocuments() {
   const [licenseFront, setLicenseFront] = useState(null);
   const [licenseBack, setLicenseBack] = useState(null);
 
-  
-  // const handleDigiLocker = async () => {
-  //   try {
-  //     const response = await initDigiLockerApi();
 
-  //     if (!response?.authUrl) {
-  //       Alert.alert('Error', 'DigiLocker not available');
-  //       return;
-  //     }
-
-  //     await Linking.openURL(response.authUrl);
-  //   } catch (error) {
-  //     console.log(error);
-  //     Alert.alert('Error', 'Unable to open DigiLocker');
-  //   }
-  // };
-
+  const isValidImage = (file) => {
+    if (!file?.uri) return false;
+    return /\.(jpg|jpeg|png)$/i.test(file.uri);
+  };
 
   const handleDigiLocker = async () => {
     try {
@@ -86,6 +74,22 @@ export default function DriverDocuments() {
       return;
     }
 
+    if (!isValidImage(aadhaar))
+      return Alert.alert("Invalid file", "Upload Aadhaar image (jpg/png)");
+
+    if (!isValidImage(panCard))
+      return Alert.alert("Invalid file", "Upload PAN image (jpg/png)");
+
+    if (!isValidImage(licenseFront))
+      return Alert.alert("Invalid file", "Upload License Front image");
+
+    if (!isValidImage(licenseBack))
+      return Alert.alert("Invalid file", "Upload License Back image");
+
+    if (licenseFront?.uri === licenseBack?.uri) {
+      return Alert.alert("Invalid", "License front and back cannot be same");
+    }
+
     const formData = new FormData();
 
     formData.append('aadhaar', {
@@ -115,12 +119,10 @@ export default function DriverDocuments() {
     try {
       await uploadDriverDocumentsApi(formData);
 
-      // ✅ ALWAYS NAVIGATE (backend bug)
       navigation.navigate('DriverVerification');
     } catch (error) {
       console.log('Upload error:', error);
 
-      // ✅ STILL NAVIGATE
       navigation.navigate('DriverVerification');
     }
   };

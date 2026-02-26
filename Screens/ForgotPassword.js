@@ -1,4 +1,5 @@
-import { View, Text, Alert, StyleSheet } from 'react-native';
+import { View, Text, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import AppInput from '../components/AppInput';
 import AppButton from '../components/AppButton';
@@ -44,6 +45,12 @@ export default function ForgotPassword({ navigation }) {
     return (
         <LinearGradient colors={['#ffffff', '#f2f6ff']} style={styles.container}>
 
+            <View style={styles.backContainer}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Ionicons name="arrow-back-outline" size={28} color="#000" />
+                </TouchableOpacity>
+            </View>
+
             <AppLogo />
 
             <Text style={styles.title}>Forgot Password</Text>
@@ -64,6 +71,12 @@ export default function ForgotPassword({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+    backContainer: {
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        zIndex: 10,
+    },
     container: {
         flex: 1,
         backgroundColor: '#F7F9FC',

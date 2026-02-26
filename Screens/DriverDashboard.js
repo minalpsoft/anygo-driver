@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Switch, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../theme/colors';
 import AppHeader from '../components/AppHeader';
@@ -341,21 +341,7 @@ export default function DriverDashboard({ navigation }) {
         }
     };
 
-
     const [earnings, setEarnings] = useState(null);
-
-    // useEffect(() => {
-    //     const loadEarnings = async () => {
-    //         try {
-    //             const res = await getDriverEarningsApi();
-    //             setEarnings(res.data);
-    //         } catch (err) {
-    //             console.log('❌ EARNINGS ERROR', err?.response?.data || err.message);
-    //         }
-    //     };
-
-    //     loadEarnings();
-    // }, []);
 
     const [todayStats, setTodayStats] = useState({
         earnings: 0,
@@ -408,17 +394,29 @@ export default function DriverDashboard({ navigation }) {
             {/* HEADER */}
             <AppHeader title="Dashboard" navigation={navigation} />
 
-            <TouchableOpacity
-                onPress={toggleOnline}
+            <View
                 style={[
-                    styles.statusBtn,
-                    { backgroundColor: isOnline ? '#2ecc71' : '#e74c3c' },
+                    styles.onlineToggleBox,
+                    { backgroundColor: isOnline ? "#E8F8F0" : "#FDECEA" }
                 ]}
             >
-                <Text style={{ color: '#fff' }}>
-                    {isOnline ? 'ONLINE' : 'OFFLINE'}
+                <Text
+                    style={[
+                        styles.onlineLabel,
+                        { color: isOnline ? "#1E8449" : "#C0392B" }
+                    ]}
+                >
+                    {isOnline ? "You are Online" : "You are Offline"}
                 </Text>
-            </TouchableOpacity>
+
+                <Switch
+                    value={isOnline}
+                    onValueChange={toggleOnline}
+                    trackColor={{ false: "#e74c3c", true: "#2ecc71" }}
+                    thumbColor="#fff"
+                    style={{ transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }] }}
+                />
+            </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -527,46 +525,7 @@ export default function DriverDashboard({ navigation }) {
                     )
                 )}
 
-                {/* ONGOING TRIP */}
-                {/* {ongoingTrip && (
-                    <Card>
-                        <View style={styles.rowBetween}>
-                            <Text style={styles.cardTitle}>Ongoing Trip</Text>
-
-                            <TouchableOpacity
-                                style={styles.acceptBtn}
-                                onPress={() =>
-                                    navigation.navigate('Navigation', {
-                                        booking: ongoingTrip,
-                                    })
-                                }
-                            >
-                                <Text style={styles.link}>Navigation</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <Text style={styles.label}>Pickup</Text>
-                        <Text>{ongoingTrip.pickupAddress}</Text>
-
-                        <Divider />
-
-                        <TouchableOpacity
-                            style={[styles.acceptBtn, { marginTop: 10 }]}
-                            onPress={async () => {
-                                await api.post(`/drivers/start-trip/${ongoingTrip.bookingId}`);
-                                setOngoingTrip({ ...ongoingTrip, status: 'STARTED' });
-
-                                navigation.navigate('Navigation', {
-                                    booking: ongoingTrip,
-                                    tripStarted: true,
-                                });
-                            }}
-                        >
-                            <Text style={styles.acceptText}>Start Trip</Text>
-                        </TouchableOpacity>
-                    </Card>
-                )} */}
-
+              
                 {/* QR CODE */}
                 <View style={styles.qrCard}>
 
@@ -589,6 +548,25 @@ export default function DriverDashboard({ navigation }) {
 
 
 const styles = StyleSheet.create({
+    onlineToggleBox: {
+        backgroundColor: "#fff",
+        margin: 20,
+        marginTop:20,
+        paddingVertical: 18,
+        paddingHorizontal: 20,
+        borderRadius: 14,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginVertical: 10,
+        elevation: 3,
+    },
+
+    onlineLabel: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#333",
+    },
     container: {
         flex: 1,
         backgroundColor: '#F5F6FA',
@@ -620,7 +598,11 @@ const styles = StyleSheet.create({
         color: COLORS.primary,
         fontWeight: '600',
     },
-
+    statusText: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 14,
+    },
     amount1: {
         fontSize: 22,
         fontWeight: '700',

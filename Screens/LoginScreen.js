@@ -14,6 +14,7 @@ export default function LoginScreen() {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
 
   const handleLogin = async () => {
@@ -46,14 +47,20 @@ export default function LoginScreen() {
       style={styles.container}
     >
 
-      {/* <AppLogo /> */}
+      <AppLogo />
 
       <Text style={styles.title}>Driver Login</Text>
 
       <AppInput placeholder="Enter Mobile Number" keyboardType="number-pad"
         onChangeText={setMobile} />
-      <AppInput placeholder="Enter Password" secureTextEntry onChangeText={setPassword} />
-
+      <AppInput
+        placeholder="Enter Password"
+        secureTextEntry={!showPassword}
+        value={password}
+        onChangeText={setPassword}
+        rightIcon={showPassword ? "eye-off" : "eye"}
+        onRightIconPress={() => setShowPassword(!showPassword)}
+      />
       <AppButton title={loading ? "Please wait..." : "Submit"} onPress={handleLogin} />
 
       <View style={styles.links}>

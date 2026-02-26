@@ -26,11 +26,44 @@ export default function DriverDetails() {
   const [cities, setCities] = useState([]);
   const [accepted, setAccepted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const validateForm = () => {
+    const nameRegex = /^[A-Za-z ]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/;
+
+    if (!firstName.trim()) return "First name is required";
+    if (!nameRegex.test(firstName)) return "First name can contain only letters";
+
+    if (!lastName.trim()) return "Last name is required";
+    if (!nameRegex.test(lastName)) return "Last name can contain only letters";
+
+    if (!mobile) return "Mobile number is required";
+    if (!mobileRegex.test(mobile)) return "Enter valid 10-digit mobile";
+
+    if (!emergencyMobile) return "Emergency mobile is required";
+    if (!mobileRegex.test(emergencyMobile)) return "Enter valid emergency mobile";
+
+    if (mobile === emergencyMobile)
+      return "Emergency number must be different from driver mobile";
+
+    if (!city) return "Please select city";
+
+    if (!password) return "Password is required";
+    if (password.length < 6)
+      return "Password must be at least 6 characters";
+
+    if (!accepted)
+      return "Please accept Terms & Conditions";
+
+    return null;
+  };
 
   const handleDriverRegister = async () => {
 
-    if (!firstName || !lastName || !mobile || !emergencyMobile || !password || !city) {
-      Alert.alert('Error', 'All fields are required');
+    const error = validateForm();
+    if (error) {
+      Alert.alert("Validation Error", error);
       return;
     }
 
@@ -92,11 +125,15 @@ export default function DriverDetails() {
       style={{ flex: 1 }}
     >
       <ScrollView
-        contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         overScrollMode="always"
         bounces={true}
+        contentContainerStyle={{
+          paddingBottom: 250,
+          backgroundColor: '#F7F9FC',
+          padding: 20,
+        }}
       >
 
         <View style={styles.backContainer}>
@@ -110,10 +147,31 @@ export default function DriverDetails() {
 
         <Text style={styles.title}>Driver Details</Text>
 
-        <AppInput placeholder="Driver's First Name" value={firstName} onChangeText={setFirstName} />
-        <AppInput placeholder="Driver's Last Name" value={lastName} onChangeText={setLastName} />
-        <AppInput placeholder="Driver's Mobile Number" value={mobile} onChangeText={setMobile} />
-        <AppInput placeholder="Emergency Mobile Number" value={emergencyMobile} onChangeText={setEmergencyMobile} />
+        <AppInput
+          placeholder="Driver's First Name"
+          value={firstName}
+          onChangeText={(t) => setFirstName(t.replace(/[^A-Za-z ]/g, ""))}
+        />
+
+        <AppInput
+          placeholder="Driver's Last Name"
+          value={lastName}
+          onChangeText={(t) => setLastName(t.replace(/[^A-Za-z ]/g, ""))}
+        />
+
+        <AppInput
+          placeholder="Driver's Mobile Number"
+          keyboardType="number-pad"
+          value={mobile}
+          onChangeText={(t) => setMobile(t.replace(/[^0-9]/g, ""))}
+        />
+
+        <AppInput
+          placeholder="Emergency Mobile Number"
+          keyboardType="number-pad"
+          value={emergencyMobile}
+          onChangeText={(t) => setEmergencyMobile(t.replace(/[^0-9]/g, ""))}
+        />
 
         <View style={styles.inputWrapper}>
           <Picker
@@ -128,9 +186,14 @@ export default function DriverDetails() {
           </Picker>
         </View>
 
-
-
-        <AppInput placeholder="Enter Password" secureTextEntry value={password} onChangeText={setPassword} />
+        <AppInput
+          placeholder="Enter Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          rightIcon={showPassword ? "eye-off" : "eye"}
+          onRightIconPress={() => setShowPassword(!showPassword)}
+        />
         {password.length > 0 && password.length < 6 && (
           <Text style={{ color: 'red', fontSize: 12, marginLeft: 5, marginTop: 4 }}>
             Password length should be more than 6 characters
@@ -168,7 +231,6 @@ export default function DriverDetails() {
 
 
         <AppButton title="Next" onPress={handleDriverRegister} />
-
 
         <Modal
           visible={showTerms}
