@@ -15,7 +15,8 @@
       "package": "com.anygodriver",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FF1E1E"
+        "backgroundColor": "#FF1E1E",
+        "usesCleartextTraffic": true
       },
       "config": {
         "googleMaps": {
