@@ -8,6 +8,7 @@ export default function AppInput({
   placeholder,
   keyboardType,
   secureTextEntry,
+  placeholderTextColor,
   rightIcon,
   onRightIconPress,
 }) {
@@ -16,6 +17,7 @@ export default function AppInput({
       <TextInput
         style={styles.input}
         placeholder={placeholder}
+        placeholderTextColor={placeholderTextColor || "#999"}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
